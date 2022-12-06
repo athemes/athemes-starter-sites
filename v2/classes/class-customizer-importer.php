@@ -80,6 +80,9 @@ class ATSS_Customizer_Importer {
 				) );
 
 				$option->import( $option_value );
+
+				$imported_customizer_options[] = $option_key;
+
 			}
 		}
 
@@ -92,16 +95,27 @@ class ATSS_Customizer_Importer {
 
 		// Loop through the mods and save the mods.
 		foreach ( $data['mods'] as $key => $val ) {
+
 			if ( $use_wp_customize_save_hooks ) {
 				do_action( 'customize_save_' . $key, $wp_customize );
 			}
 
 			set_theme_mod( $key, $val );
+
 		}
 
 		if ( $use_wp_customize_save_hooks ) {
 			do_action( 'customize_save_after', $wp_customize );
 		}
+
+		if ( ! empty( $data['mods'] ) ) {
+			update_option( '_athemes_sites_imported_customizer_mods', $data['mods'] );
+		}
+
+		if ( ! empty( $data['options'] ) ) {
+			update_option( '_athemes_sites_imported_customizer_options', $data['options'] );
+		}
+
 	}
 
 	/**
@@ -116,13 +130,17 @@ class ATSS_Customizer_Importer {
 			if ( self::customizer_is_image_url( $val ) ) {
 				$data = self::customizer_sideload_image( $val );
 				if ( ! is_wp_error( $data ) ) {
+
 					$mods[ $key ] = $data->url;
+
+					update_post_meta( $data->attachment_id, '_athemes_sites_imported_post', true );
 
 					// Handle header image controls.
 					if ( isset( $mods[ $key . '_data' ] ) ) {
 						$mods[ $key . '_data' ] = $data;
 						update_post_meta( $data->attachment_id, '_wp_attachment_is_custom_header', get_stylesheet() );
 					}
+
 				}
 			}
 		}
@@ -140,6 +158,7 @@ class ATSS_Customizer_Importer {
 	 * @return array An array of image data.
 	 */
 	private static function customizer_sideload_image( $file ) {
+
 		$data = new stdClass();
 
 		if ( ! function_exists( 'media_handle_sideload' ) ) {
@@ -147,6 +166,7 @@ class ATSS_Customizer_Importer {
 			require_once( ABSPATH . 'wp-admin/includes/file.php' );
 			require_once( ABSPATH . 'wp-admin/includes/image.php' );
 		}
+
 		if ( ! empty( $file ) ) {
 			// Set variables for storage, fix file filename for query strings.
 			preg_match( '/[^\?]+\.(jpe?g|jpe|gif|png)\b/i', $file, $matches );
@@ -180,6 +200,7 @@ class ATSS_Customizer_Importer {
 		}
 
 		return $data;
+
 	}
 
 	/**
@@ -190,6 +211,7 @@ class ATSS_Customizer_Importer {
 	 * @return bool Whether the string is an image url or not.
 	 */
 	private static function customizer_is_image_url( $string = '' ) {
+
 		if ( is_string( $string ) ) {
 			if ( preg_match( '/\.(jpg|jpeg|png|gif)/i', $string ) ) {
 				return true;
@@ -197,5 +219,6 @@ class ATSS_Customizer_Importer {
 		}
 
 		return false;
+
 	}
 }

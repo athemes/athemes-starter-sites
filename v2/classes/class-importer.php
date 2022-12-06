@@ -30,6 +30,13 @@ class Athemes_Starter_Sites_Importer {
 	private $microtime;
 
 	/**
+	 * The id mapping for extras
+	 *
+	 * @var array
+	 */
+	private $id_mapping;
+
+	/**
 	 * Singleton instance
 	 *
 	 * @var Athemes_Starter_Sites_Import
@@ -65,6 +72,8 @@ class Athemes_Starter_Sites_Importer {
 		add_action( 'upload_mimes', array( $this, 'add_custom_mimes' ) );
 		add_filter( 'wp_check_filetype_and_ext', array( $this, 'real_mime_type_for_xml' ), 10, 4 );
 
+		add_action( 'wp_ajax_atss_import_start', array( $this, 'atss_import_start' ) );
+		add_action( 'wp_ajax_atss_import_clean', array( $this, 'atss_import_clean' ) );
 		add_action( 'wp_ajax_atss_import_plugin', array( $this, 'ajax_import_plugin' ) );
 		add_action( 'wp_ajax_atss_import_contents', array( $this, 'ajax_import_contents' ) );
 		add_action( 'wp_ajax_atss_import_widgets', array( $this, 'ajax_import_widgets' ) );
@@ -221,6 +230,221 @@ class Athemes_Starter_Sites_Importer {
 	}
 
 	/**
+	 * Start import.
+	 */
+	public function atss_import_start() {
+
+		check_ajax_referer( 'nonce', 'nonce' );
+
+		/**
+		 * Variables.
+		 */
+		$demo_id = ( isset( $_POST['demo_id'] ) ) ? sanitize_text_field( wp_unslash( $_POST['demo_id'] ) ) : '';
+
+		if ( ! $demo_id || ! isset( $this->demos[ $demo_id ] ) ) {
+			wp_send_json_error( esc_html__( 'Invalid demo id.', 'athemes-starter-sites' ) );
+		}
+
+		if ( ! current_user_can( 'edit_theme_options' ) ) {
+			wp_send_json_error( esc_html__( 'You are not permitted to start demo.', 'athemes-starter-sites' ) );
+		}
+
+		update_option( '_athemes_sites_imported_plugins', array() );
+		update_option( '_athemes_sites_imported_widgets', array() );
+		update_option( '_athemes_sites_imported_customizer_mods', array() );
+		update_option( '_athemes_sites_imported_customizer_opts', array() );
+		update_option( '_athemes_sites_imported_options', array() );
+		update_option( '_athemes_sites_id_mapping', array() );
+
+		/**
+		 * Action hook.
+		 */
+		do_action( 'atss_import_start' );
+
+		/**
+		 * Return successful AJAX.
+		 */
+		wp_send_json_success();
+
+	}
+
+	/**
+	 * Clean previous import.
+	 */
+	public function atss_import_clean() {
+
+		check_ajax_referer( 'nonce', 'nonce' );
+
+		/**
+		 * Variables.
+		 */
+		$demo_id = ( isset( $_POST['demo_id'] ) ) ? sanitize_text_field( wp_unslash( $_POST['demo_id'] ) ) : '';
+
+		if ( ! $demo_id || ! isset( $this->demos[ $demo_id ] ) ) {
+			wp_send_json_error( esc_html__( 'Invalid demo id.', 'athemes-starter-sites' ) );
+		}
+
+		if ( ! current_user_can( 'edit_theme_options' ) ) {
+			wp_send_json_error( esc_html__( 'You are not permitted to clean previous import.', 'athemes-starter-sites' ) );
+		}
+
+		/**
+		 * Suspend bunches of stuff in WP core.
+		 */
+		wp_suspend_cache_invalidation( true );
+
+		global $wpdb;
+
+		/**
+		 * Delete posts.
+		 */
+		$query  = $wpdb->prepare( "SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = %s", '_athemes_sites_imported_post' );
+		$result = $wpdb->get_col( $query );
+
+		if ( ! empty( $result ) ) {
+			foreach ( $result as $post_id ) {
+				$post_type = get_post_type( $post_id );
+				if ( $post_type === 'elementor_library' ) {
+					$_GET['force_delete_kit'] = true;
+				}
+				wp_delete_post( $post_id, true );
+			}
+		}
+
+		/**
+		 * Delete terms.
+		 */
+		$query  = $wpdb->prepare( "SELECT term_id FROM {$wpdb->termmeta} WHERE meta_key = %s", '_athemes_sites_imported_term' );
+		$result = $wpdb->get_col( $query );
+
+		if ( ! empty( $result ) ) {
+			foreach ( $result as $term_id ) {
+				$term = get_term( $term_id );
+				if ( ! is_wp_error( $term ) && ! empty( $term ) && is_object( $term ) ) {
+					wp_delete_term( $term->term_id, $term->taxonomy );
+				}
+			}
+		}
+
+		/**
+		 * Re-enable stuff in core
+		 */
+		wp_suspend_cache_invalidation( false );
+
+		/**
+		 * Deactivate imported plugins.
+		 */
+		// $imported_plugins = get_option( '_athemes_sites_imported_plugins', array() );
+
+		// if ( ! empty( $imported_plugins ) ) {
+		// 	foreach ( $imported_plugins as $plugin_path ) {
+		// 		if ( is_plugin_active( $plugin_path ) ) {
+		// 			deactivate_plugins( $plugin_path );
+		// 		}
+		// 	}
+		// }
+
+		/**
+		 * Clean imported widgets.
+		 */
+		$imported_widgets = get_option( '_athemes_sites_imported_widgets', array() );
+
+		if ( ! empty( $imported_widgets ) ) {
+			$imported_widget_ids = array();
+			foreach ( $imported_widgets as $imported_widget ) {
+				if ( ! empty( $imported_widget ) && is_array( $imported_widget ) ) {
+					$imported_widget_ids = array_merge( $imported_widget_ids, $imported_widget );
+				}
+			}
+
+			$sidebars_widgets = get_option( 'sidebars_widgets', array() );
+
+			if ( ! empty( $imported_widget_ids ) && ! empty( $sidebars_widgets ) ) {
+				foreach ( $sidebars_widgets as $sidebar_id => $widgets ) {
+					if ( ! empty( $widgets ) && is_array( $widgets ) ) {
+						$widgets = (array) $widgets;
+						foreach ( $widgets as $widget_id ) {
+							if ( in_array( $widget_id, $imported_widget_ids, true ) ) {
+								$sidebars_widgets['wp_inactive_widgets'][] = $widget_id;
+								$sidebars_widgets[ $sidebar_id ] = array_diff( $sidebars_widgets[ $sidebar_id ], array( $widget_id ) );
+							}
+						}
+					}
+				}
+
+				update_option( 'sidebars_widgets', $sidebars_widgets );
+
+			}
+
+		}
+
+		/**
+		 * Clean imported customizer mods.
+		 */
+		$imported_customizer_mods = get_option( '_athemes_sites_imported_customizer_mods', array() );
+
+		if ( ! empty( $imported_customizer_mods ) ) {
+			foreach ( $imported_customizer_mods as $mod_key => $mod_name ) {
+				remove_theme_mod( $mod_key );
+			}
+		}
+
+		/**
+		 * Clean imported customizer options.
+		 */
+		$imported_customizer_options = get_option( '_athemes_sites_imported_customizer_options', array() );
+
+		if ( ! empty( $imported_customizer_options ) ) {
+			foreach ( $imported_customizer_options as $option_key => $option_name ) {
+				delete_option( $option_key );
+			}
+		}
+
+		/**
+		 * Clean imported options.
+		 */
+		$imported_options = get_option( '_athemes_sites_imported_options', array() );
+
+		if ( ! empty( $imported_options['mods'] ) ) {
+			foreach ( $imported_options['mods'] as $name ) {
+				remove_theme_mod( $name );
+			}
+		}
+
+		if ( ! empty( $imported_options['options'] ) ) {
+			foreach ( $imported_options['options'] as $name ) {
+				delete_option( $name );
+			}
+		}
+
+		/**
+		 * Flush permalinks.
+		 */	
+		flush_rewrite_rules();
+
+		/**
+		 * Action hook.
+		 */
+		do_action( 'atss_import_clean' );
+
+		/**
+		 * Clean options.
+		 */
+		delete_option( '_athemes_sites_imported_plugins' );
+		delete_option( '_athemes_sites_imported_widgets' );
+		delete_option( '_athemes_sites_imported_customizer_mods' );
+		delete_option( '_athemes_sites_imported_customizer_opts' );
+		delete_option( '_athemes_sites_imported_options' );
+		delete_option( '_athemes_sites_id_mapping' );
+
+		/**
+		 * Return successful AJAX.
+		 */
+		wp_send_json_success();
+
+	}
+
+	/**
 	 * AJAX callback to install and activate a plugin.
 	 */
 	public function ajax_import_plugin() {
@@ -262,16 +486,25 @@ class Athemes_Starter_Sites_Importer {
 
 		}
 
+		/**
+		 * Action hook.
+		 */
+		do_action( 'atss_import_plugin', $slug, $path );
+
+		/**
+		 * Return successful AJAX.
+		 */
 		if ( 'active' === $this->get_plugin_status( $path ) ) {
+
+			$plugins = get_option( '_athemes_sites_imported_plugins', array() );
+
+			$plugins[] = $path;
+
+			update_option( '_athemes_sites_imported_plugins', $plugins );
 
 			wp_send_json_success();
 
 		}
-
-		/**
-		 * Action hook.
-		 */
-		do_action( 'atss_import_plugin', $plugin['slug'], $plugin['path'] );
 
 		wp_send_json_error( esc_html__( 'Failed to initialize or activate importer plugin.', 'athemes-starter-sites' ) );
 
@@ -335,25 +568,15 @@ class Athemes_Starter_Sites_Importer {
 				'name'     => basename( $xml_file_url ),
 				'tmp_name' => $temp_file,
 				'error'    => 0,
-				'size'     => filesize( $temp_file ),
+				'size'     => @filesize( $temp_file ),
 			);
 
 			$overrides = array(
-				// This tells WordPress to not look for the POST form
-				// fields that would normally be present. Default is true.
-				// Since the file is being downloaded from a remote server,
-				// there will be no form fields.
 				'test_form'   => false,
-
-				// Setting this to false lets WordPress allow empty files – not recommended.
 				'test_size'   => true,
-
-				// A properly uploaded file will pass this test.
-				// There should be no reason to override this one.
 				'test_upload' => true,
-
 				'mimes'       => array(
-					'xml' => 'text/xml',
+					'xml'  => 'text/xml',
 				),
 			);
 
@@ -397,6 +620,8 @@ class Athemes_Starter_Sites_Importer {
 		// Time to run the import!
 		set_time_limit( 0 );
 
+		$this->retry = 1;
+
 		$this->microtime = microtime( true );
 
 		// Are we allowed to create users?
@@ -405,12 +630,32 @@ class Athemes_Starter_Sites_Importer {
 		// Check, if we need to send another AJAX request and set the importing author to the current user.
 		add_filter( 'wxr_importer.pre_process.post', array( $this, 'ajax_request_maybe' ) );
 
-		// Attachment handler
-  	add_filter( 'wxr_importer.pre_process.post', array( $this, 'attachment_handler' ) );
+		// Post content replace attachment urls
+  	add_filter( 'wxr_importer.pre_process.post', array( $this, 'post_content_replace_attachment_urls' ) );
 
-		// Elementor meta data handler
-		if ( $builder_type === 'elementor' ) {
-    	add_filter( 'wxr_importer.pre_process.post_meta', array( $this, 'elementor_meta_handler' ), 10, 2 );
+		// Post meta replace attachment urls
+  	add_filter( 'wxr_importer.pre_process.post_meta', array( $this, 'post_meta_replace_attachment_urls' ), 10, 2 );
+
+		// Imported post id mapping
+  	add_filter( 'wxr_importer.processed.post', array( $this, 'imported_post_id_mapping' ), 10, 2 );
+
+		// Imported term id mapping
+  	add_filter( 'wxr_importer.processed.term', array( $this, 'imported_term_id_mapping' ), 10, 2 );
+
+		// Track imported post
+  	add_filter( 'wxr_importer.processed.post', array( $this, 'track_imported_post' ) );
+
+		// Track imported term
+  	add_filter( 'wxr_importer.processed.term', array( $this, 'track_imported_term' ) );
+
+		// Convert images to placeholder
+		if ( $content_type === 'placeholder' ) {
+  		add_filter( 'atss_importer.processed.attachment', array( $this, 'convert_attachment_to_placeholder' ) );
+		}
+
+		// WooCommerce product attributes registration.
+		if ( class_exists( 'WooCommerce' ) ) {
+			add_filter( 'wxr_importer.pre_process.term', array( $this, 'woocommerce_product_attributes_registration' ) );
 		}
 
 		// Set the WordPress Importer v2 as the importer used in this plugin.
@@ -418,7 +663,6 @@ class Athemes_Starter_Sites_Importer {
 		$importer = new ATSS_WXRImporter( array(
 			'fetch_attachments' => true,
 			'default_author'    => get_current_user_id(),
-			'content_type'      => $content_type,
 		) );
 
 		// Logger options for the logger used in the importer.
@@ -518,8 +762,8 @@ class Athemes_Starter_Sites_Importer {
 					continue;
 				}
 
-				$url_parts['path'] = preg_split( '/\//', $url_parts['path'] );
-				$url_parts['path'] = array_slice( $url_parts['path'], - 3 );
+				$url_parts['path'] = explode( '/', $url_parts['path'] );
+				$url_parts['path'] = array_slice( $url_parts['path'], -3 );
 
 				$uploads_dir = wp_get_upload_dir();
 				$uploads_url = $uploads_dir['baseurl'];
@@ -536,9 +780,9 @@ class Athemes_Starter_Sites_Importer {
 	}
 
 	/**
-	 * Attachment handler
+	 * Post content replace attachment urls.
 	 */
-	public function attachment_handler( $data ) {
+	public function post_content_replace_attachment_urls( $data ) {
 
 		if ( ! empty( $data ) && ! empty( $data['post_content'] ) ) {
 			$data['post_content'] = $this->replace_attachment_urls( $data['post_content'] );
@@ -549,19 +793,20 @@ class Athemes_Starter_Sites_Importer {
 	}
 
 	/**
-	 * Elementor meta handler
+	 * Post meta replace attachment urls.
 	 */
-	public function elementor_meta_handler( $meta_item, $post_id ) {
+	public function post_meta_replace_attachment_urls( $meta_item, $post_id ) {
 
 		if ( ! empty( $meta_item ) ) {
 
-			// Re-map elementor data images
-			if ( $meta_item['key'] === '_elementor_data' ) {
+			// Replace mega menu attachments urls.
+			if ( $meta_item['key'] === '_is_mega_menu_item_content_custom_html' && ! empty( $meta_item['value'] ) ) {
+				$meta_item['value'] = $this->replace_attachment_urls( $meta_item['value'] );
+			}
 
-				$new_value = maybe_unserialize( $meta_item['value'] );
-
-				$meta_item['value'] = $this->replace_attachment_urls( $new_value );
-
+			// Replace elementor attachments urls.
+			if ( $meta_item['key'] === '_elementor_data' && ! empty( $meta_item['value'] ) ) {
+				$meta_item['value'] = $this->replace_attachment_urls( maybe_unserialize( $meta_item['value'] ) );
 			}
 
 	    // Set elementor default kit.
@@ -572,6 +817,154 @@ class Athemes_Starter_Sites_Importer {
 		}
 
 		return $meta_item;
+
+	}
+
+  public function imported_post_id_mapping( $post_id, $data ) {
+
+    $original_id = isset( $data['post_id'] ) ? $data['post_id'] : 0;
+
+    if ( (int) $post_id !== (int) $original_id ) {
+
+      $mapping = get_option( '_athemes_sites_id_mapping', array() );
+
+      $mapping['post'][ $original_id ] = $data;
+
+      update_option( '_athemes_sites_id_mapping', $mapping );
+
+    }
+
+  }
+
+  public function imported_term_id_mapping( $term_id, $data ) {
+
+    $original_id = isset( $data['term_id'] ) ? $data['term_id'] : 0;
+
+    if ( (int) $term_id !== (int) $original_id ) {
+
+      $mapping = get_option( '_athemes_sites_id_mapping', array() );
+
+      $mapping['term'][ $original_id ] = $data;
+
+      update_option( '_athemes_sites_id_mapping', $mapping );
+
+    }
+
+  }
+
+	/**
+	 * Track imported post for clean previous install.
+	 */
+	public function track_imported_post( $post_id = 0 ) {
+
+		update_post_meta( $post_id, '_athemes_sites_imported_post', true );
+
+	}
+
+	/**
+	 * Track imported term for clean previous install.
+	 */
+	public function track_imported_term( $term_id = 0 ) {
+
+		update_term_meta( $term_id, '_athemes_sites_imported_term', true );
+
+	}
+
+	/**
+	 * Convert attachment to placeholder.
+	 */
+	public function convert_attachment_to_placeholder( $data ) {
+
+		if ( ! empty( $data['file'] ) ) {
+
+			list( $image_width, $image_height, $image_type ) = @getimagesize( $data['file'] );
+
+			$image = @imagecreatetruecolor( $image_width, $image_height );
+
+			@imagefilter( $image, IMG_FILTER_COLORIZE, 240, 240, 240 );
+
+			switch ( $image_type ) {
+
+				case IMAGETYPE_GIF:
+					@imagegif( $image, $data['file'] );
+				break;
+
+				case IMAGETYPE_PNG:
+					@imagepng( $image, $data['file'] );
+				break;
+
+				case IMAGETYPE_JPEG:
+					@imagejpeg( $image, $data['file'] );
+				break;
+
+			}
+
+		}
+
+		return $data;
+
+	}
+
+	/**
+	 *
+	 * Hook into the pre-process term filter of the content import and register the
+	 * custom WooCommerce product attributes, so that the terms can then be imported normally.
+	 *
+	 * This should probably be removed once the WP importer 2.0 support is added in WooCommerce.
+	 *
+	 * Fixes: [WARNING] Failed to import pa_size L warnings in content import.
+	 * Code from: woocommerce/includes/admin/class-wc-admin-importers.php (ver 2.6.9).
+	 *
+	 * Github issue: https://github.com/awesomemotive/one-click-demo-import/issues/71
+	 *
+	 * @param  array $date The term data to import.
+	 * @return array       The unchanged term data.
+	 *
+	 */
+	public function woocommerce_product_attributes_registration( $data ) {
+
+		global $wpdb;
+
+		if ( strstr( $data['taxonomy'], 'pa_' ) ) {
+			if ( ! taxonomy_exists( $data['taxonomy'] ) ) {
+				$attribute_name = wc_sanitize_taxonomy_name( str_replace( 'pa_', '', $data['taxonomy'] ) );
+				$attribute_type = 'select';
+
+				// To do: Generate .xml import file with "attribute_type".
+				if( $attribute_name === 'color' ) {
+					$attribute_type = 'color';
+				} else if( $attribute_name === 'size' ) {
+					$attribute_type = 'button';
+				}
+
+				// Create the taxonomy
+				if ( ! in_array( $attribute_name, wc_get_attribute_taxonomies() ) ) {
+					$attribute = array(
+						'attribute_label'   => $attribute_name,
+						'attribute_name'    => $attribute_name,
+						'attribute_type'    => $attribute_type,
+						'attribute_orderby' => 'menu_order',
+						'attribute_public'  => 0
+					);
+					$wpdb->insert( $wpdb->prefix . 'woocommerce_attribute_taxonomies', $attribute );
+					delete_transient( 'wc_attribute_taxonomies' );
+				}
+
+				// Register the taxonomy now so that the import works!
+				register_taxonomy(
+					$data['taxonomy'],
+					apply_filters( 'woocommerce_taxonomy_objects_' . $data['taxonomy'], array( 'product' ) ),
+					apply_filters( 'woocommerce_taxonomy_args_' . $data['taxonomy'], array(
+						'hierarchical' => true,
+						'show_ui'      => false,
+						'query_var'    => true,
+						'rewrite'      => false,
+					) )
+				);
+			}
+		}
+
+		return $data;
 
 	}
 
@@ -621,6 +1014,8 @@ class Athemes_Starter_Sites_Importer {
 		// Decode raw JSON string to associative array.
 		$data = json_decode( wp_remote_retrieve_body( $raw ) );
 
+		$data = map_deep( $data, array( $this, 'replace_attachment_urls' ) );
+
 		$widgets = new ATSS_Widget_Importer();
 
 		// Import.
@@ -628,7 +1023,6 @@ class Athemes_Starter_Sites_Importer {
 
 		if ( is_wp_error( $results ) ) {
 			$error_message = $results->get_error_message();
-
 			wp_send_json_error( $error_message );
 		}
 
@@ -647,7 +1041,9 @@ class Athemes_Starter_Sites_Importer {
 		}
 
 		// Sidebar Widgets
-		$sidebar_widgets = get_option( 'sidebars_widgets' );
+		$sidebar_widgets = get_option( 'sidebars_widgets', array() );
+
+		update_option( '_athemes_sites_imported_widgets', $sidebar_widgets, 'no' );
 
 		do_action( 'atss_import_widgets', $sidebar_widgets, $widget_instances );
 
@@ -704,6 +1100,8 @@ class Athemes_Starter_Sites_Importer {
 		// Decode raw JSON string to associative array.
 		$data = maybe_unserialize( wp_remote_retrieve_body( $raw ), true );
 
+		$data = map_deep( $data, array( $this, 'replace_attachment_urls' ) );
+
 		$customizer = new ATSS_Customizer_Importer();
 
 		// Import.
@@ -718,7 +1116,6 @@ class Athemes_Starter_Sites_Importer {
 		/**
 		 * Action hook.
 		 */
-
 		do_action( 'atss_import_customizer', $data );
 
 		/**

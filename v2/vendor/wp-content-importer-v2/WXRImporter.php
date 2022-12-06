@@ -109,13 +109,8 @@ class ATSS_WXRImporter extends WP_Importer {
 			'fetch_attachments'         => false,
 			'aggressive_url_search'     => false,
 			'default_author'            => null,
-			'content_type'              => '',
 		) );
 
-		// WooCommerce product attributes registration.
-		if ( class_exists( 'WooCommerce' ) ) {
-			add_filter( 'wxr_importer.pre_process.term', array( $this, 'woocommerce_product_attributes_registration' ), 10, 1 );
-		}
 	}
 
 	public function set_logger( $logger ) {
@@ -882,6 +877,13 @@ class ATSS_WXRImporter extends WP_Importer {
 				) );
 				return false;
 			}
+			// [ATSS] Fix -scaled.jpg image attachments
+			// if ( ! empty( $data['attachment_url'] ) && $data['attachment_url'] !== $data['guid'] && strpos( $data['attachment_url'], 'scaled' ) ) {
+			// 	$post_id = $this->process_attachment( $postdata, $meta, $data['guid'] );
+			// 	if ( ! is_wp_error( $post_id ) ) {
+			// 		do_action( 'wxr_importer.processed.post', $post_id, $data, $meta, $comments, $terms );
+			// 	}
+			// }
 			$remote_url = ! empty( $data['attachment_url'] ) ? $data['attachment_url'] : $data['guid'];
 			$post_id = $this->process_attachment( $postdata, $meta, $remote_url );
 		} else {
@@ -890,7 +892,7 @@ class ATSS_WXRImporter extends WP_Importer {
 		}
 
 		if ( is_wp_error( $post_id ) ) {
-			$this->logger->error( sprintf(
+			$this->logger->warning( sprintf(
 				__( 'Failed to import "%s" (%s)', 'wordpress-importer' ),
 				$data['post_title'],
 				$post_type_object->labels->singular_name
@@ -1124,34 +1126,8 @@ class ATSS_WXRImporter extends WP_Importer {
 			$post['guid'] = $upload['url'];
 		}
 
-		// Placeholder Feature
-		if ( $this->options['content_type'] === 'placeholder' ) {
-
-			$file = $upload['file'];
-
-			list( $image_width, $image_height, $image_type ) = @getimagesize( $upload['file'] );
-
-			$image = @imagecreatetruecolor( $image_width, $image_height );
-
-			@imagefilter( $image, IMG_FILTER_COLORIZE, 240, 240, 240 );
-
-			switch ( $image_type ) {
-
-				case IMAGETYPE_GIF:
-					@imagegif( $image, $upload['file'] );
-				break;
-
-				case IMAGETYPE_PNG:
-					@imagepng( $image, $upload['file'] );
-				break;
-
-				case IMAGETYPE_JPEG:
-					@imagejpeg( $image, $upload['file'] );
-				break;
-
-			}
-
-		}
+		// [ATSS] Placeholder attachment action.
+		do_action( 'atss_importer.processed.attachment', $upload );
 
 		// as per wp-admin/includes/upload.php
 		$post_id = wp_insert_attachment( $post, $upload['file'] );
@@ -1640,7 +1616,7 @@ class ATSS_WXRImporter extends WP_Importer {
 
 		$user_id = wp_insert_user( wp_slash( $userdata ) );
 		if ( is_wp_error( $user_id ) ) {
-			$this->logger->error( sprintf(
+			$this->logger->warning( sprintf(
 				__( 'Failed to import user "%s"', 'wordpress-importer' ),
 				$userdata['user_login']
 			) );
@@ -2003,7 +1979,7 @@ class ATSS_WXRImporter extends WP_Importer {
 			);
 		}
 
-		$filesize = filesize( $upload['file'] );
+		$filesize = @filesize( $upload['file'] );
 		$headers = wp_remote_retrieve_headers( $response );
 
 		// OCDI fix!
@@ -2597,64 +2573,5 @@ class ATSS_WXRImporter extends WP_Importer {
 	protected function mark_term_exists( $data, $term_id ) {
 		$exists_key = sha1( $data['taxonomy'] . ':' . $data['slug'] );
 		$this->exists['term'][ $exists_key ] = $term_id;
-	}
-
-	/**
-	 * Hook into the pre-process term filter of the content import and register the
-	 * custom WooCommerce product attributes, so that the terms can then be imported normally.
-	 *
-	 * This should probably be removed once the WP importer 2.0 support is added in WooCommerce.
-	 *
-	 * Fixes: [WARNING] Failed to import pa_size L warnings in content import.
-	 * Code from: woocommerce/includes/admin/class-wc-admin-importers.php (ver 2.6.9).
-	 *
-	 * Github issue: https://github.com/awesomemotive/one-click-demo-import/issues/71
-	 *
-	 * @param  array $date The term data to import.
-	 * @return array       The unchanged term data.
-	 */
-	public function woocommerce_product_attributes_registration( $data ) {
-		global $wpdb;
-
-		if ( strstr( $data['taxonomy'], 'pa_' ) ) {
-			if ( ! taxonomy_exists( $data['taxonomy'] ) ) {
-				$attribute_name = wc_sanitize_taxonomy_name( str_replace( 'pa_', '', $data['taxonomy'] ) );
-				$attribute_type = 'select';
-
-				// To do: Generate .xml import file with "attribute_type".
-				if( $attribute_name === 'color' ) {
-					$attribute_type = 'color';
-				} else if( $attribute_name === 'size' ) {
-					$attribute_type = 'button';
-				}
-
-				// Create the taxonomy
-				if ( ! in_array( $attribute_name, wc_get_attribute_taxonomies() ) ) {
-					$attribute = array(
-						'attribute_label'   => $attribute_name,
-						'attribute_name'    => $attribute_name,
-						'attribute_type'    => $attribute_type,
-						'attribute_orderby' => 'menu_order',
-						'attribute_public'  => 0
-					);
-					$wpdb->insert( $wpdb->prefix . 'woocommerce_attribute_taxonomies', $attribute );
-					delete_transient( 'wc_attribute_taxonomies' );
-				}
-
-				// Register the taxonomy now so that the import works!
-				register_taxonomy(
-					$data['taxonomy'],
-					apply_filters( 'woocommerce_taxonomy_objects_' . $data['taxonomy'], array( 'product' ) ),
-					apply_filters( 'woocommerce_taxonomy_args_' . $data['taxonomy'], array(
-						'hierarchical' => true,
-						'show_ui'      => false,
-						'query_var'    => true,
-						'rewrite'      => false,
-					) )
-				);
-			}
-		}
-
-		return $data;
 	}
 }

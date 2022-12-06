@@ -12,6 +12,29 @@
   border: 1px solid #e4e4e4;
 }
 
+.atss-demo-item-imported{
+  border-color: #3858e9;
+
+  &:before{
+    content: "\f15e";
+    font-family: dashicons;
+    font-size: 16px;
+    line-height: 1em;
+    position: absolute;
+    z-index: 1;
+    top: -1px;
+    right: -1px;
+    width: 24px;
+    height: 24px;
+    border-radius: 0 4px 0 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+    background-color: #3858e9;
+  }
+}
+
 .atss-demo-data{
   padding: 15px;
   display: flex;
@@ -428,7 +451,6 @@
   display: flex;
   grid-gap: 15px;
   flex-direction: column;
-  align-items: flex-start;
 
   label{
     display: flex;
@@ -473,6 +495,18 @@
       }
     }
   }
+}
+
+.atss-import-clean-checkboxes{
+  grid-gap: 7px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #d9d9d9;
+}
+
+.atss-import-clean-description{
+  font-size: 13px;
+  color: #757575;
 }
 
 .atss-import-plugin-required{
@@ -590,7 +624,17 @@
   height: 100%;
   width: var(--atss-indicator);
   background-color: #3858E9;
+  border-radius: 2px;
   transition: width .2s;
+  background-size: 100px 100%;
+  background-image: linear-gradient(-45deg, #3858E9 33%, #6682ff 33%, #6682ff 70%, #3858E9 70%);
+  animation: atss-busy-animation 2s infinite linear;
+}
+
+@keyframes atss-busy-animation{
+  0%{
+    background-position: 200px 0;
+  }
 }
 
 .atss-import-error-content{

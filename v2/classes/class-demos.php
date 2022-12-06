@@ -118,6 +118,8 @@ class ATSS_Demos_Page {
 			return;
 		}
 
+		$current_demo = get_option( 'atss_current_starter', '' );
+
 		?>
 			<div class="atss">
 
@@ -150,9 +152,11 @@ class ATSS_Demos_Page {
 								}
 							}
 
+							$imported_class = ( $current_demo === $demo_id ) ? ' atss-demo-item-imported' : '';
+
 						?>
 
-						<div class="atss-demo-item" data-type="<?php echo esc_attr( $type ); ?>" data-categories="<?php echo esc_attr( $categories ); ?>" data-builders="<?php echo esc_attr( $builders ); ?>">
+						<div class="atss-demo-item<?php echo esc_attr( $imported_class ); ?>" data-type="<?php echo esc_attr( $type ); ?>" data-categories="<?php echo esc_attr( $categories ); ?>" data-builders="<?php echo esc_attr( $builders ); ?>">
 
 							<div class="atss-demo-image">
 								<?php if ( ! empty( $demo['thumbnail'] ) ) : ?>
@@ -264,6 +268,8 @@ class ATSS_Demos_Page {
 
 					<input type="hidden" name="demo_id" value="{{ data.args.demoId }}" />
 
+					<input type="hidden" name="start" data-action="atss_import_start" data-priority="20" data-log="<?php esc_html_e( 'Starting setup...', 'athemes-starter-sites' ); ?>" />
+
 					<# var isStartFromFirstStep = ( ! data.args.quick ) ? ' atss-active' : ''; #>
 
 					<div class="atss-import-step{{ isStartFromFirstStep }}">
@@ -287,7 +293,7 @@ class ATSS_Demos_Page {
 														var builderPluginName    = ( builder === 'gutenberg' ) ? 'aThemes Blocks' : 'Elementor';
 														var builderPluginChecked = ( data.args.builder === builder ) ? ' checked="checked"' : '';
 													#>
-													<input type="radio" name="builder_type" value="{{ builder }}" data-action="atss_import_plugin" data-priority="1" data-slug="{{ builderPluginSlug }}" data-path="{{ builderPluginSlug }}/{{ builderPluginSlug }}.php" data-log="<?php esc_html_e( 'Installing and activating', 'athemes-starter-sites' ); ?>: {{ builderPluginName }}" {{{ builderPluginChecked }}} />
+													<input type="radio" name="builder_type" value="{{ builder }}" data-action="atss_import_plugin" data-priority="30" data-slug="{{ builderPluginSlug }}" data-path="{{ builderPluginSlug }}/{{ builderPluginSlug }}.php" data-log="<?php esc_html_e( 'Installing and activating', 'athemes-starter-sites' ); ?>: {{ builderPluginName }}" {{{ builderPluginChecked }}} />
 													<figure>
 														<img src="{{ window.atss_localize.plugin_url }}v2/assets/img/builder-{{ builder }}.svg" />
 													</figure>
@@ -348,21 +354,31 @@ class ATSS_Demos_Page {
 									<div class="atss-import-toggle-content">
 										<div class="atss-import-checkboxes">
 											<label>
-												<input type="checkbox" data-action="atss_import_contents" data-priority="2" data-log="<?php esc_html_e( 'Importing contents...', 'athemes-starter-sites' ); ?>" checked="checked" />
+												<input type="checkbox" data-action="atss_import_contents" data-priority="40" data-log="<?php esc_html_e( 'Importing contents...', 'athemes-starter-sites' ); ?>" checked="checked" />
 												<span><i></i></span>
 												<?php esc_html_e( 'Content', 'athemes-starter-sites' ); ?>
 											</label>
 											<label>
-												<input type="checkbox" data-action="atss_import_widgets" data-priority="2" data-log="<?php esc_html_e( 'Importing widgets...', 'athemes-starter-sites' ); ?>" checked="checked" />
+												<input type="checkbox" data-action="atss_import_widgets" data-priority="41" data-log="<?php esc_html_e( 'Importing widgets...', 'athemes-starter-sites' ); ?>" checked="checked" />
 												<span><i></i></span>
 												<?php esc_html_e( 'Widgets', 'athemes-starter-sites' ); ?>
 											</label>
 											<label>
-												<input type="checkbox" data-action="atss_import_customizer" data-priority="2" data-log="<?php esc_html_e( 'Importing customizer options...', 'athemes-starter-sites' ); ?>" checked="checked" />
+												<input type="checkbox" data-action="atss_import_customizer" data-priority="42" data-log="<?php esc_html_e( 'Importing customizer options...', 'athemes-starter-sites' ); ?>" checked="checked" />
 												<span><i></i></span>
 												<?php esc_html_e( 'Customizer', 'athemes-starter-sites' ); ?>
 											</label>
 										</div>
+										<# if ( data.args.imported ) { #>
+											<div class="atss-import-checkboxes atss-import-clean-checkboxes">
+												<label>
+													<input type="checkbox" data-action="atss_import_clean" data-priority="10" data-log="<?php esc_html_e( 'Cleaning previous import data...', 'athemes-starter-sites' ); ?>" checked="checked" />
+													<span><i></i></span>
+													<?php esc_html_e( 'Clean Install', 'athemes-starter-sites' ); ?>
+												</label>
+												<div class="atss-import-clean-description"><?php esc_html_e( 'This option will remove the previous imported content and will perform a fresh and clean install.', 'athemes-starter-sites' ); ?></div>
+											</div>
+										<# } #>
 									</div>
 								</div>
 							</div>
@@ -399,7 +415,7 @@ class ATSS_Demos_Page {
 											<# _.each( data.plugins, function( plugin ) { #>
 												<# var isPluginRequired = ( plugin.required ) ? ' atss-import-plugin-required' : ''; #>
 												<label class="atss-import-plugin-{{ plugin.slug }}{{ isPluginRequired }}">
-													<input type="checkbox" name="plugin" data-action="atss_import_plugin" data-priority="1" data-slug="{{ plugin.slug }}" data-path="{{ plugin.path }}" data-log="<?php esc_html_e( 'Installing and activating', 'athemes-starter-sites' ); ?>: {{ plugin.name }}" checked="checked" />
+													<input type="checkbox" name="plugin" data-action="atss_import_plugin" data-priority="30" data-slug="{{ plugin.slug }}" data-path="{{ plugin.path }}" data-log="<?php esc_html_e( 'Installing and activating', 'athemes-starter-sites' ); ?>: {{ plugin.name }}" checked="checked" />
 													<span><i></i></span>
 													{{{ plugin.name }}}
 												</label>
@@ -496,7 +512,7 @@ class ATSS_Demos_Page {
 						</div>
 					</div>
 
-					<input type="hidden" data-action="atss_import_finish" data-priority="4" data-log="<?php esc_html_e( 'Finishing setup...', 'athemes-starter-sites' ); ?>"/>
+					<input type="hidden" name="finish" data-action="atss_import_finish" data-priority="50" data-log="<?php esc_html_e( 'Finishing setup...', 'athemes-starter-sites' ); ?>"/>
 
 				</form>
 
@@ -528,7 +544,7 @@ class ATSS_Demos_Page {
 	 */
 	public function html_notice() {
 
-		if ( ! $this->is_athemes_template() && ! get_transient( 'atts_no_active_theme' ) ) {
+		if ( ! $this->is_athemes_template() && ! get_transient( 'atss_no_active_theme' ) ) {
 			?>
 			<div class="atss-notice notice notice-warning is-dismissible">
 				<p>
@@ -546,7 +562,7 @@ class ATSS_Demos_Page {
 	 * Purified from the database information about notification.
 	 */
 	public function reset_notices() {
-		delete_transient( 'atts_no_active_theme' );
+		delete_transient( 'atss_no_active_theme' );
 	}
 
   /**
@@ -555,7 +571,7 @@ class ATSS_Demos_Page {
   public function ajax_dismissed_handler() {
 
     check_ajax_referer( 'nonce', 'nonce' );
-    set_transient( 'atts_no_active_theme', true, 90 * DAY_IN_SECONDS );
+    set_transient( 'atss_no_active_theme', true, 90 * DAY_IN_SECONDS );
     wp_send_json_success();
 
   }

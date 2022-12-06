@@ -5,7 +5,9 @@
   var $body = $('body');
 
   var atssTimer;
-  var atssTakenTime = 1;
+  var atssDemoItem;
+  var atssTakenTime  = 1;
+  var atssDoneOrFail = false;
 
   var atssAjaxImportRecursive = function( $form, steps, step ) {
 
@@ -43,7 +45,9 @@
             step--;
           }
 
-          atssAjaxImportRecursive( $form, steps, step );
+          setTimeout( function() {
+            atssAjaxImportRecursive( $form, steps, step );
+          }, 500);
 
         } else if ( response.data ) {
 
@@ -95,15 +99,21 @@
       $form.find('.atss-import-finish-tweet-text').html( tweetText );
       $form.find('.atss-import-finish-tweet-button').attr('href', 'https://twitter.com/intent/tweet?text='+ tweetText );
 
-      clearInterval( atssTimer );
-
       setTimeout( function() {
         $form.find('.atss-import-step').removeClass('atss-active');
         $form.find('.atss-import-step-finish').addClass('atss-active');
         $body.removeClass('atss-import-in-progress');
       }, 250);
 
+      atssDemoItem.addClass('atss-demo-item-imported').siblings().removeClass('atss-demo-item-imported');
+
+      clearInterval( atssTimer );
+
+      atssTakenTime = 1;
+
     }
+
+    atssDoneOrFail = true;
 
   };
 
@@ -143,7 +153,7 @@
 
         var $button = $(this);
 
-        var $demo   = $button.closest('.atss-demo-item');
+        var $demo = $button.closest('.atss-demo-item');
 
         var demoObj = {
           preview: $button.attr('href'),
@@ -245,12 +255,15 @@
 
         if ( demoObj && demoObj.builders.length ) {
 
+          atssDemoItem = $(this).closest('.atss-demo-item');
+
           // create args object
           demoObj.args = {};
 
-          demoObj.args.demoId  = demoId;
-          demoObj.args.quick   = $(this).data('quick') || ( demoObj.builders.length < 2 ) || false;
-          demoObj.args.builder = $(this).data('builder') || demoObj.builders[0];
+          demoObj.args.demoId   = demoId;
+          demoObj.args.quick    = $(this).data('quick') || ( demoObj.builders.length < 2 ) || false;
+          demoObj.args.builder  = $(this).data('builder') || demoObj.builders[0];
+          demoObj.args.imported = window.atss_localize.imported || atssDoneOrFail;
 
           $atss.find('.atss-import').html( template( demoObj ) );
 

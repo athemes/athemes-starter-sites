@@ -40,6 +40,7 @@ if ( ! class_exists( 'Athemes_Starter_Sites' ) ) {
 			// Actions.
 			add_action( 'plugins_loaded', array( $this, 'theme_configs' ) );
 			add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ), 15 );
+			// delete_option( 'atss_current_starter', '' );
 
 		}
 
@@ -87,6 +88,7 @@ if ( ! class_exists( 'Athemes_Starter_Sites' ) ) {
 				'plugin_url'        => ATSS_URL,
 				'nonce'             => wp_create_nonce( 'nonce' ),
 				'demos'             => $demos,
+				'imported'          => get_option( 'atss_current_starter', '' ),
 				'settings'          => $settings,
 				'i18n'              => array(
 					'import_failed'   => esc_html__( 'Something went wrong, contact support.', 'athemes-starter-sites' ),
@@ -106,7 +108,7 @@ if ( ! class_exists( 'Athemes_Starter_Sites' ) ) {
 
 		public function current_starter( $theme, $demo_id ) {
 
-			$current = get_option( 'atts_current_starter' );
+			$current = get_option( 'atss_current_starter' );
 
 			if ( $current === $demo_id ) {
 				return false;
@@ -119,7 +121,7 @@ if ( ! class_exists( 'Athemes_Starter_Sites' ) ) {
 				)
 			);
 
-			update_option( 'atts_current_starter', $demo_id );
+			update_option( 'atss_current_starter', $demo_id );
 
 		}
 
