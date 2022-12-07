@@ -40,7 +40,6 @@ if ( ! class_exists( 'Athemes_Starter_Sites' ) ) {
 			// Actions.
 			add_action( 'plugins_loaded', array( $this, 'theme_configs' ) );
 			add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ), 15 );
-			// delete_option( 'atss_current_starter', '' );
 
 		}
 

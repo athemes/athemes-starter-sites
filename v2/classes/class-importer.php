@@ -1165,6 +1165,28 @@ class Athemes_Starter_Sites_Importer {
 		}
 
 		/**
+		 * Update nav menu term count for avoid missing menu items.
+		 */
+		$nav_menu_terms = get_terms( array(
+			'taxonomy'   => 'nav_menu',
+			'hide_empty' => false,
+		) );
+
+		$nav_menu_term_ids = array();
+
+		if ( ! is_wp_error( $nav_menu_terms ) && ! empty( $nav_menu_terms ) ) {
+			foreach ( $nav_menu_terms as $nav_menu_term ) {
+				if ( empty( $nav_menu_term->count ) ) {
+					$nav_menu_term_ids[] = $nav_menu_term->term_id;
+				}
+			}
+		}
+
+		if ( ! empty( $nav_menu_term_ids ) ) {
+			wp_update_term_count_now( $nav_menu_term_ids, 'nav_menu' );
+		}
+
+		/**
 		 * Action hook.
 		 */
 		do_action( 'atss_finish_import', $demo_id );

@@ -877,13 +877,6 @@ class ATSS_WXRImporter extends WP_Importer {
 				) );
 				return false;
 			}
-			// [ATSS] Fix -scaled.jpg image attachments
-			// if ( ! empty( $data['attachment_url'] ) && $data['attachment_url'] !== $data['guid'] && strpos( $data['attachment_url'], 'scaled' ) ) {
-			// 	$post_id = $this->process_attachment( $postdata, $meta, $data['guid'] );
-			// 	if ( ! is_wp_error( $post_id ) ) {
-			// 		do_action( 'wxr_importer.processed.post', $post_id, $data, $meta, $comments, $terms );
-			// 	}
-			// }
 			$remote_url = ! empty( $data['attachment_url'] ) ? $data['attachment_url'] : $data['guid'];
 			$post_id = $this->process_attachment( $postdata, $meta, $remote_url );
 		} else {

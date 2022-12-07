@@ -201,6 +201,7 @@ add_filter( 'atss_register_demos_list', 'botiga_demos_list' );
  */
 function botiga_setup_after_import( $demo_id ) {
 
+	// Track options
 	$imported_options = get_option( '_athemes_sites_imported_options', array() );
 
 	$imported_options['mods']    = array();
@@ -210,44 +211,49 @@ function botiga_setup_after_import( $demo_id ) {
 	$css_class = new Botiga_Custom_CSS();
 	$css_class->update_custom_css_file();
 
+	// Get current locations.
+	$locations = array();
+
+	// Track nav menu location for reset.
+	$imported_options['mods'][]   = 'nav_menu_locations';
+
+	// Track modules for reset.
+	$imported_options['options'][] = 'botiga-modules';
+
 	// Assign the menu.
 	$main_menu = get_term_by( 'name', 'Main', 'nav_menu' );
 	if ( ! empty( $main_menu ) ) {
-		set_theme_mod(
-			'nav_menu_locations',
-			array(
-				'primary' => $main_menu->term_id,
-			)
-		);
-		$imported_options['mods'][] = 'nav_menu_locations';
+		$locations['primary'] = $main_menu->term_id;
 	}
 
+	// Beauty, Furniture and Single Product Demo Extras
+	if ( in_array( $demo_id, array( 'beauty', 'furniture', 'single-product' ) ) ) {
+
+		update_option( 'botiga-modules', array( 'hf-builder' => true ) );
+
+		// Update custom CSS file to generate mega menu css
+		$custom_css = Botiga_Custom_CSS::get_instance();
+    $custom_css->update_custom_css_file();
+
+	}
+
+	// Apparel Demo Extras
 	if ( $demo_id === 'apparel' ) {
 
-		// The demo apparel uses the old header system, so we need to disable the HF Builder
-		$all_modules = get_option( 'botiga-modules' );
-		$all_modules = ( is_array( $all_modules ) ) ? $all_modules : (array) $all_modules;
-		update_option( 'botiga-modules', array_merge( $all_modules, array( 'hf-builder' => false ) ) );
-		
+		update_option( 'botiga-modules', array( 'hf-builder' => false ) );
+
 		// Assign footer copyright menu
 		$copyright_menu = get_term_by( 'name', 'Footer Copyright', 'nav_menu' );
 		if ( ! empty( $copyright_menu ) ) {
-			set_theme_mod(
-				'nav_menu_locations',
-				array(
-					'footer-copyright-menu' => $copyright_menu->term_id,
-				)
-			);
-			$imported_options['mods'][] = 'nav_menu_locations';
+			$locations['footer-copyright-menu'] = $copyright_menu->term_id;
 		}
 
 	}
 
+	// Jewelry Demo Extras
 	if ( $demo_id === 'jewelry' ) {
 
-		$all_modules = get_option( 'botiga-modules' );
-		$all_modules = ( is_array( $all_modules ) ) ? $all_modules : (array) $all_modules;
-		update_option( 'botiga-modules', array_merge( $all_modules, array( 'hf-builder' => true, 'mega-menu' => true ) ) );
+		update_option( 'botiga-modules', array( 'hf-builder' => true, 'mega-menu' => true ) );
 
 		// Update custom CSS file with mega menu css
 		if ( class_exists( 'Botiga_Mega_menu' ) ) {
@@ -284,7 +290,7 @@ function botiga_setup_after_import( $demo_id ) {
 		$nav_menu_widget = get_option( 'widget_nav_menu' );
 		foreach ( $nav_menu_widget as $key => $widget ) {
 			if( $key != '_multiwidget' ) {
-				if( in_array( $nav_menu_widget[ $key ]['title'], array( 'About', 'Quick links', 'Quick Links' ) ) ) {
+				if( in_array( $nav_menu_widget[ $key ]['title'], array( 'About' ) ) ) {
 					$nav_menu_widget[ $key ]['nav_menu'] = $footer_menu_two->term_id;
 					update_option( 'widget_nav_menu', $nav_menu_widget );
 					$imported_options['options'][] = 'widget_nav_menu';
@@ -345,6 +351,9 @@ function botiga_setup_after_import( $demo_id ) {
 		update_option( 'woocommerce_myaccount_page_id', $myaccount_page->ID );
 		$imported_options['options'][] = 'woocommerce_myaccount_page_id';
 	}
+
+	// Save bulk locations.
+	set_theme_mod( 'nav_menu_locations', $locations );
 
 	// Update custom CSS
 	$custom_css = Botiga_Custom_CSS::get_instance();
