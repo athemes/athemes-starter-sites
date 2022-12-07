@@ -30,13 +30,6 @@ class Athemes_Starter_Sites_Importer {
 	private $microtime;
 
 	/**
-	 * The id mapping for extras
-	 *
-	 * @var array
-	 */
-	private $id_mapping;
-
-	/**
 	 * Singleton instance
 	 *
 	 * @var Athemes_Starter_Sites_Import
@@ -254,7 +247,6 @@ class Athemes_Starter_Sites_Importer {
 		update_option( '_athemes_sites_imported_customizer_mods', array() );
 		update_option( '_athemes_sites_imported_customizer_options', array() );
 		update_option( '_athemes_sites_imported_options', array() );
-		update_option( '_athemes_sites_id_mapping', array() );
 
 		/**
 		 * Action hook.
@@ -287,49 +279,6 @@ class Athemes_Starter_Sites_Importer {
 		if ( ! current_user_can( 'edit_theme_options' ) ) {
 			wp_send_json_error( esc_html__( 'You are not permitted to clean previous import.', 'athemes-starter-sites' ) );
 		}
-
-		/**
-		 * Suspend bunches of stuff in WP core.
-		 */
-		wp_suspend_cache_invalidation( true );
-
-		global $wpdb;
-
-		/**
-		 * Delete posts.
-		 */
-		$query  = $wpdb->prepare( "SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = %s", '_athemes_sites_imported_post' );
-		$result = $wpdb->get_col( $query );
-
-		if ( ! empty( $result ) ) {
-			foreach ( $result as $post_id ) {
-				$post_type = get_post_type( $post_id );
-				if ( $post_type === 'elementor_library' ) {
-					$_GET['force_delete_kit'] = true;
-				}
-				wp_delete_post( $post_id, true );
-			}
-		}
-
-		/**
-		 * Delete terms.
-		 */
-		$query  = $wpdb->prepare( "SELECT term_id FROM {$wpdb->termmeta} WHERE meta_key = %s", '_athemes_sites_imported_term' );
-		$result = $wpdb->get_col( $query );
-
-		if ( ! empty( $result ) ) {
-			foreach ( $result as $term_id ) {
-				$term = get_term( $term_id );
-				if ( ! is_wp_error( $term ) && ! empty( $term ) && is_object( $term ) ) {
-					wp_delete_term( $term->term_id, $term->taxonomy );
-				}
-			}
-		}
-
-		/**
-		 * Re-enable stuff in core
-		 */
-		wp_suspend_cache_invalidation( false );
 
 		/**
 		 * Deactivate imported plugins.
@@ -418,6 +367,49 @@ class Athemes_Starter_Sites_Importer {
 		}
 
 		/**
+		 * Suspend bunches of stuff in WP core.
+		 */
+		wp_suspend_cache_invalidation( true );
+
+		global $wpdb;
+
+		/**
+		 * Delete posts.
+		 */
+		$query  = $wpdb->prepare( "SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = %s", '_athemes_sites_imported_post' );
+		$result = $wpdb->get_col( $query );
+
+		if ( ! empty( $result ) ) {
+			foreach ( $result as $post_id ) {
+				$post_type = get_post_type( $post_id );
+				if ( $post_type === 'elementor_library' ) {
+					$_GET['force_delete_kit'] = true;
+				}
+				wp_delete_post( $post_id, true );
+			}
+		}
+
+		/**
+		 * Delete terms.
+		 */
+		$query  = $wpdb->prepare( "SELECT term_id FROM {$wpdb->termmeta} WHERE meta_key = %s", '_athemes_sites_imported_term' );
+		$result = $wpdb->get_col( $query );
+
+		if ( ! empty( $result ) ) {
+			foreach ( $result as $term_id ) {
+				$term = get_term( $term_id );
+				if ( ! is_wp_error( $term ) && ! empty( $term ) && is_object( $term ) ) {
+					wp_delete_term( $term->term_id, $term->taxonomy );
+				}
+			}
+		}
+
+		/**
+		 * Re-enable stuff in core
+		 */
+		wp_suspend_cache_invalidation( false );
+
+		/**
 		 * Flush permalinks.
 		 */	
 		flush_rewrite_rules();
@@ -435,7 +427,6 @@ class Athemes_Starter_Sites_Importer {
 		delete_option( '_athemes_sites_imported_customizer_mods' );
 		delete_option( '_athemes_sites_imported_customizer_options' );
 		delete_option( '_athemes_sites_imported_options' );
-		delete_option( '_athemes_sites_id_mapping' );
 
 		/**
 		 * Return successful AJAX.
@@ -634,12 +625,6 @@ class Athemes_Starter_Sites_Importer {
 		// Post meta replace attachment urls
   	add_filter( 'wxr_importer.pre_process.post_meta', array( $this, 'post_meta_replace_attachment_urls' ), 10, 2 );
 
-		// Imported post id mapping
-  	add_filter( 'wxr_importer.processed.post', array( $this, 'imported_post_id_mapping' ), 10, 2 );
-
-		// Imported term id mapping
-  	add_filter( 'wxr_importer.processed.term', array( $this, 'imported_term_id_mapping' ), 10, 2 );
-
 		// Track imported post
   	add_filter( 'wxr_importer.processed.post', array( $this, 'track_imported_post' ) );
 
@@ -654,6 +639,7 @@ class Athemes_Starter_Sites_Importer {
 		// WooCommerce product attributes registration.
 		if ( class_exists( 'WooCommerce' ) ) {
 			add_filter( 'wxr_importer.pre_process.term', array( $this, 'woocommerce_product_attributes_registration' ) );
+			add_filter( 'wxr_importer.processed.term', array( $this, 'woocommerce_product_attributes_filter' ) );
 		}
 
 		// Set the WordPress Importer v2 as the importer used in this plugin.
@@ -822,38 +808,6 @@ class Athemes_Starter_Sites_Importer {
 
 	}
 
-  public function imported_post_id_mapping( $post_id, $data ) {
-
-    $original_id = isset( $data['post_id'] ) ? $data['post_id'] : 0;
-
-    if ( (int) $post_id !== (int) $original_id ) {
-
-      $mapping = get_option( '_athemes_sites_id_mapping', array() );
-
-      $mapping['post'][ $original_id ] = $data;
-
-      update_option( '_athemes_sites_id_mapping', $mapping );
-
-    }
-
-  }
-
-  public function imported_term_id_mapping( $term_id, $data ) {
-
-    $original_id = isset( $data['term_id'] ) ? $data['term_id'] : 0;
-
-    if ( (int) $term_id !== (int) $original_id ) {
-
-      $mapping = get_option( '_athemes_sites_id_mapping', array() );
-
-      $mapping['term'][ $original_id ] = $data;
-
-      update_option( '_athemes_sites_id_mapping', $mapping );
-
-    }
-
-  }
-
 	/**
 	 * Track imported post for clean previous install.
 	 */
@@ -947,7 +901,7 @@ class Athemes_Starter_Sites_Importer {
 				if ( ! in_array( $attribute_name, wc_get_attribute_taxonomies() ) ) {
 
 					$attribute = array(
-						'attribute_label'   => $attribute_name,
+						'attribute_label'   => ucwords( str_replace( '-', ' ', $attribute_name ) ),
 						'attribute_name'    => $attribute_name,
 						'attribute_type'    => $attribute_type,
 						'attribute_orderby' => 'menu_order',
@@ -977,6 +931,25 @@ class Athemes_Starter_Sites_Importer {
 		}
 
 		return $data;
+
+	}
+
+	/**
+	 * WooCommerce product attribute filter.
+	 */
+	public function woocommerce_product_attributes_filter( $term_id ) {
+
+		$term_keys = array(
+			'product_attribute_color',
+			'product_attribute_image',
+		);
+
+		foreach ( $term_keys as $term_key ) {
+			$term_meta = get_term_meta( $term_id, $term_key );
+			if ( ! is_wp_error( $term_meta ) && ! empty( $term_meta ) && empty( $term_meta[0] ) && ! empty( $term_meta[1] ) ) {
+				update_term_meta( $term_id, $term_key, $term_meta[1] );
+			}
+		}
 
 	}
 

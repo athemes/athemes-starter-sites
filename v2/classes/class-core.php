@@ -80,7 +80,7 @@ if ( ! class_exists( 'Athemes_Starter_Sites' ) ) {
 			$theme = wp_get_theme();
 			$theme = ( get_template_directory() !== get_stylesheet_directory() && $theme->parent() ) ? $theme->parent() : $theme;
 
-			wp_enqueue_script( 'athemes-starter-sites', ATSS_URL . 'v2/assets/js/script.js', array( 'jquery', 'wp-util', 'underscore' ), '2.0.0', true );
+			wp_enqueue_script( 'athemes-starter-sites', ATSS_URL . 'v2/assets/js/script.min.js', array( 'jquery', 'wp-util', 'underscore' ), '2.0.0', true );
 
 			wp_localize_script( 'athemes-starter-sites', 'atss_localize', array(
 				'ajax_url'          => admin_url( 'admin-ajax.php' ),
