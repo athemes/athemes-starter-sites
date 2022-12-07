@@ -252,7 +252,7 @@ class Athemes_Starter_Sites_Importer {
 		update_option( '_athemes_sites_imported_plugins', array() );
 		update_option( '_athemes_sites_imported_widgets', array() );
 		update_option( '_athemes_sites_imported_customizer_mods', array() );
-		update_option( '_athemes_sites_imported_customizer_opts', array() );
+		update_option( '_athemes_sites_imported_customizer_options', array() );
 		update_option( '_athemes_sites_imported_options', array() );
 		update_option( '_athemes_sites_id_mapping', array() );
 
@@ -433,7 +433,7 @@ class Athemes_Starter_Sites_Importer {
 		delete_option( '_athemes_sites_imported_plugins' );
 		delete_option( '_athemes_sites_imported_widgets' );
 		delete_option( '_athemes_sites_imported_customizer_mods' );
-		delete_option( '_athemes_sites_imported_customizer_opts' );
+		delete_option( '_athemes_sites_imported_customizer_options' );
 		delete_option( '_athemes_sites_imported_options' );
 		delete_option( '_athemes_sites_id_mapping' );
 
@@ -620,8 +620,6 @@ class Athemes_Starter_Sites_Importer {
 		// Time to run the import!
 		set_time_limit( 0 );
 
-		$this->retry = 1;
-
 		$this->microtime = microtime( true );
 
 		// Are we allowed to create users?
@@ -727,11 +725,15 @@ class Athemes_Starter_Sites_Importer {
 
 		}
 
-		// Set importing author to the current user.
-		// Fixes the [WARNING] Could not find the author for ... log warning messages.
-		$current_user_obj = wp_get_current_user();
+		if ( ! empty( $data ) && is_array( $data ) ) {
 
-		$data['post_author'] = $current_user_obj->user_login;
+			// Set importing author to the current user.
+			// Fixes the [WARNING] Could not find the author for ... log warning messages.
+			$current_user_obj = wp_get_current_user();
+
+			$data['post_author'] = $current_user_obj->user_login;
+
+		}
 
 		return $data;
 
@@ -926,7 +928,9 @@ class Athemes_Starter_Sites_Importer {
 		global $wpdb;
 
 		if ( strstr( $data['taxonomy'], 'pa_' ) ) {
+
 			if ( ! taxonomy_exists( $data['taxonomy'] ) ) {
+
 				$attribute_name = wc_sanitize_taxonomy_name( str_replace( 'pa_', '', $data['taxonomy'] ) );
 				$attribute_type = 'select';
 
@@ -935,10 +939,13 @@ class Athemes_Starter_Sites_Importer {
 					$attribute_type = 'color';
 				} else if( $attribute_name === 'size' ) {
 					$attribute_type = 'button';
+				} else if( $attribute_name === 'image' ) {
+					$attribute_type = 'image';
 				}
 
 				// Create the taxonomy
 				if ( ! in_array( $attribute_name, wc_get_attribute_taxonomies() ) ) {
+
 					$attribute = array(
 						'attribute_label'   => $attribute_name,
 						'attribute_name'    => $attribute_name,
@@ -946,8 +953,11 @@ class Athemes_Starter_Sites_Importer {
 						'attribute_orderby' => 'menu_order',
 						'attribute_public'  => 0
 					);
+
 					$wpdb->insert( $wpdb->prefix . 'woocommerce_attribute_taxonomies', $attribute );
+
 					delete_transient( 'wc_attribute_taxonomies' );
+
 				}
 
 				// Register the taxonomy now so that the import works!
@@ -961,7 +971,9 @@ class Athemes_Starter_Sites_Importer {
 						'rewrite'      => false,
 					) )
 				);
+
 			}
+
 		}
 
 		return $data;
