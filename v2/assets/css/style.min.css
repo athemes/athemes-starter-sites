@@ -70,6 +70,7 @@
 .atss-import-checkboxes input{display:none}
 .atss-import-checkboxes input:checked+span{border-color:#274bdb;background-color:#274bdb}
 .atss-import-checkboxes input:checked+span i{margin-left:16px;background-color:#fff}
+.atss-import-checkboxes .atss-hidden{display:none}
 .atss-import-clean-checkboxes{grid-gap:7px;margin-top:14px;padding-top:14px;border-top:1px solid #d9d9d9}
 .atss-import-clean-description{font-size:13px;color:#757575}
 .atss-import-plugin-required{opacity:.5;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;pointer-events:none}

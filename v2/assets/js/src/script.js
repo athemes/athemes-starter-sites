@@ -16,7 +16,7 @@
     if ( steps.length > step && steps[ step ] ) {
 
       var importLog = steps[ step ].log || '';
-      var importPer = Math.round( 100 / steps.length * step );
+      var importPer = Math.max( 5, Math.round( 100 / steps.length * step ) );
 
       $form.find('.atss-import-progress-label').html( importLog );
       $form.find('.atss-import-progress-sublabel').html( importPer+'%' );
@@ -308,6 +308,17 @@
 
         $step.removeClass('atss-active');
         $step.next().addClass('atss-active');
+
+      });
+
+      $atss.on('change', '.atss-import-builder-select input', function( e ) {
+
+        $atss.find('.atss-import-plugin-builder').addClass('atss-hidden');
+        $atss.find('.atss-import-plugin-builder input').removeAtrr('checked');
+
+        if ( $(this).is(':checked') ) {
+          $atss.find('.atss-import-plugin-'+ $(this).data('builder-plugin') +' input').atrr('checked', 'checked');
+        }
 
       });
 

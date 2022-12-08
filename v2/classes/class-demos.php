@@ -288,12 +288,9 @@ class ATSS_Demos_Page {
 										<div class="atss-import-image-select atss-import-builder-select">
 											<# _.each( data.builders, function( builder ) { #>
 												<label class="atss-import-image-select-item">
-													<#
-														var builderPluginSlug    = ( builder === 'gutenberg' ) ? 'athemes-blocks' : 'elementor';
-														var builderPluginName    = ( builder === 'gutenberg' ) ? 'aThemes Blocks' : 'Elementor';
-														var builderPluginChecked = ( data.args.builder === builder ) ? ' checked="checked"' : '';
-													#>
-													<input type="radio" name="builder_type" value="{{ builder }}" data-action="atss_import_plugin" data-priority="30" data-slug="{{ builderPluginSlug }}" data-path="{{ builderPluginSlug }}/{{ builderPluginSlug }}.php" data-log="<?php esc_html_e( 'Installing and activating', 'athemes-starter-sites' ); ?>: {{ builderPluginName }}" {{{ builderPluginChecked }}} />
+													<# var builderChecked    = ( data.args.builder === builder ) ? ' checked="checked"' : ''; #>
+													<# var builderPluginSlug = ( builder === 'gutenberg' ) ? 'athemes-blocks' : builder; #>
+													<input type="radio" name="builder_type" value="{{ builder }}" data-builder-plugin="{{ builderPluginSlug }}" {{{ builderChecked }}} />
 													<figure>
 														<img src="{{ window.atss_localize.plugin_url }}v2/assets/img/builder-{{ builder }}.svg" />
 													</figure>
@@ -412,6 +409,19 @@ class ATSS_Demos_Page {
 									</div>
 									<div class="atss-import-toggle-content">
 										<div class="atss-import-checkboxes">
+											<# _.each( data.builders, function( builder ) { #>
+												<#
+													var builderPluginSlug     = ( builder === 'gutenberg' ) ? 'athemes-blocks' : 'elementor';
+													var builderPluginName     = ( builder === 'gutenberg' ) ? 'aThemes Blocks' : 'Elementor';
+													var builderPluginChecked  = ( data.args.builder === builder ) ? ' checked="checked"' : '';
+													var builderPluginActive   = ( data.args.builder !== builder ) ? ' atss-hidden' : '';
+												#>
+												<label class="atss-import-plugin-builder atss-import-plugin-{{ builderPluginSlug }} atss-import-plugin-required{{ builderPluginActive }}">
+													<input type="checkbox" name="plugin" data-action="atss_import_plugin" data-priority="30" data-slug="{{ builderPluginSlug }}" data-path="{{ builderPluginSlug }}/{{ builderPluginSlug }}.php" data-log="<?php esc_html_e( 'Installing and activating', 'athemes-starter-sites' ); ?>: {{ builderPluginName }}" {{{ builderPluginChecked }}} />
+													<span><i></i></span>
+													{{ builderPluginName }}
+												</label>
+											<# } ); #>
 											<# _.each( data.plugins, function( plugin ) { #>
 												<# var isPluginRequired = ( plugin.required ) ? ' atss-import-plugin-required' : ''; #>
 												<label class="atss-import-plugin-{{ plugin.slug }}{{ isPluginRequired }}">

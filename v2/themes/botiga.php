@@ -211,11 +211,8 @@ function botiga_setup_after_import( $demo_id ) {
 	$css_class = new Botiga_Custom_CSS();
 	$css_class->update_custom_css_file();
 
-	// Get current locations.
-	$locations = array();
-
 	// Track nav menu location for reset.
-	$imported_options['mods'][]   = 'nav_menu_locations';
+	$imported_options['mods'][] = 'nav_menu_locations';
 
 	// Track modules for reset.
 	$imported_options['options'][] = 'botiga-modules';
@@ -223,7 +220,9 @@ function botiga_setup_after_import( $demo_id ) {
 	// Assign the menu.
 	$main_menu = get_term_by( 'name', 'Main', 'nav_menu' );
 	if ( ! empty( $main_menu ) ) {
+		$locations = get_theme_mod( 'nav_menu_locations', array() );
 		$locations['primary'] = $main_menu->term_id;
+		set_theme_mod( 'nav_menu_locations', $locations );
 	}
 
 	// Beauty, Furniture and Single Product Demo Extras
@@ -245,7 +244,9 @@ function botiga_setup_after_import( $demo_id ) {
 		// Assign footer copyright menu
 		$copyright_menu = get_term_by( 'name', 'Footer Copyright', 'nav_menu' );
 		if ( ! empty( $copyright_menu ) ) {
+			$locations = get_theme_mod( 'nav_menu_locations', array() );
 			$locations['footer-copyright-menu'] = $copyright_menu->term_id;
+			set_theme_mod( 'nav_menu_locations', $locations );
 		}
 
 	}
@@ -275,7 +276,7 @@ function botiga_setup_after_import( $demo_id ) {
 		$nav_menu_widget = get_option( 'widget_nav_menu' );
 		foreach ( $nav_menu_widget as $key => $widget ) {
 			if ( $key != '_multiwidget' ) {
-				if ( in_array( $nav_menu_widget[ $key ]['title'], array( 'Quick links', 'Quick Links' ) ) || $demo_id === 'jewelry' && empty( $nav_menu_widget[ $key ]['title'] ) ) {
+				if ( empty( $nav_menu_widget[ $key ]['title'] ) && ( in_array( $nav_menu_widget[ $key ]['title'], array( 'Quick links', 'Quick Links' ) ) || $demo_id === 'jewelry' ) ) {
 					$nav_menu_widget[ $key ]['nav_menu'] = $footer_menu_one->term_id;
 					update_option( 'widget_nav_menu', $nav_menu_widget );
 					$imported_options['options'][] = 'widget_nav_menu';
@@ -289,8 +290,8 @@ function botiga_setup_after_import( $demo_id ) {
 	if ( ! empty( $footer_menu_two ) ) {
 		$nav_menu_widget = get_option( 'widget_nav_menu' );
 		foreach ( $nav_menu_widget as $key => $widget ) {
-			if( $key != '_multiwidget' ) {
-				if( in_array( $nav_menu_widget[ $key ]['title'], array( 'About' ) ) ) {
+			if ( $key != '_multiwidget' ) {
+				if ( empty( $nav_menu_widget[ $key ]['title'] ) && in_array( $nav_menu_widget[ $key ]['title'], array( 'About' ) ) ) {
 					$nav_menu_widget[ $key ]['nav_menu'] = $footer_menu_two->term_id;
 					update_option( 'widget_nav_menu', $nav_menu_widget );
 					$imported_options['options'][] = 'widget_nav_menu';
@@ -351,9 +352,6 @@ function botiga_setup_after_import( $demo_id ) {
 		update_option( 'woocommerce_myaccount_page_id', $myaccount_page->ID );
 		$imported_options['options'][] = 'woocommerce_myaccount_page_id';
 	}
-
-	// Save bulk locations.
-	set_theme_mod( 'nav_menu_locations', $locations );
 
 	// Update custom CSS
 	$custom_css = Botiga_Custom_CSS::get_instance();

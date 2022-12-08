@@ -639,8 +639,9 @@ class Athemes_Starter_Sites_Importer {
 		// WooCommerce product attributes registration.
 		if ( class_exists( 'WooCommerce' ) ) {
 			add_filter( 'wxr_importer.pre_process.term', array( $this, 'woocommerce_product_attributes_registration' ) );
-			add_filter( 'wxr_importer.processed.term', array( $this, 'woocommerce_product_attributes_filter' ) );
+			add_filter( 'add_term_metadata', array( $this, 'woocommerce_product_attributes_filter' ), 10, 5 );
 		}
+		
 
 		// Set the WordPress Importer v2 as the importer used in this plugin.
 		// More: https://github.com/humanmade/WordPress-Importer.
@@ -698,7 +699,7 @@ class Athemes_Starter_Sites_Importer {
 		$time = microtime( true ) - $this->microtime;
 
 		// We should make a new ajax call, if the time is right.
-		if ( $time > apply_filters( 'atss_time_for_one_ajax_call', 22 ) ) {
+		if ( $time > apply_filters( 'atss_time_for_one_ajax_call', 300 ) ) {
 
 			$response = array(
 				'success' => true,
@@ -937,20 +938,18 @@ class Athemes_Starter_Sites_Importer {
 	/**
 	 * WooCommerce product attribute filter.
 	 */
-	public function woocommerce_product_attributes_filter( $term_id ) {
+	public function woocommerce_product_attributes_filter( $check, $object_id, $meta_key, $meta_value, $unique ) {
 
-		$term_keys = array(
+		$meta_keys = array(
 			'product_attribute_color',
 			'product_attribute_image',
 		);
 
-		foreach ( $term_keys as $term_key ) {
-			$term_meta = get_term_meta( $term_id, $term_key );
-			if ( ! is_wp_error( $term_meta ) && ! empty( $term_meta ) && empty( $term_meta[0] ) && ! empty( $term_meta[1] ) ) {
-				update_term_meta( $term_id, $term_key, $term_meta[1] );
-			}
+		if ( in_array( $meta_key, $meta_keys ) && $meta_value === '' ) {
+			return false;
 		}
 
+		return $check;
 	}
 
 	/**
