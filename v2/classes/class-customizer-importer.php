@@ -63,6 +63,7 @@ class ATSS_Customizer_Importer {
 
 		// Import custom options.
 		if ( isset( $data['options'] ) ) {
+
 			// Require modified customizer options class.
 			if ( ! class_exists( 'WP_Customize_Setting' ) ) {
 				require_once ABSPATH . 'wp-includes/class-wp-customize-setting.php';
@@ -73,6 +74,7 @@ class ATSS_Customizer_Importer {
 			}
 
 			foreach ( $data['options'] as $option_key => $option_value ) {
+
 				$option = new ATSS_Customizer_Option( $wp_customize, $option_key, array(
 					'default'    => '',
 					'type'       => 'option',
@@ -81,9 +83,8 @@ class ATSS_Customizer_Importer {
 
 				$option->import( $option_value );
 
-				$imported_customizer_options[] = $option_key;
-
 			}
+
 		}
 
 		// Should the customizer import use the WP customize_save* hooks?

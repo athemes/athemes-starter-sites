@@ -368,6 +368,8 @@
           return a.priority - b.priority;
         });
 
+        atssTakenTime = 1;
+
         atssTimer = setInterval( function() {
           atssTakenTime++;
         }, 1000);

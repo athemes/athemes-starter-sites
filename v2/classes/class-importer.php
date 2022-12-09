@@ -369,6 +369,8 @@ class Athemes_Starter_Sites_Importer {
 		/**
 		 * Suspend bunches of stuff in WP core.
 		 */
+		wp_defer_term_counting( true );
+		wp_defer_comment_counting( true );
 		wp_suspend_cache_invalidation( true );
 
 		global $wpdb;
@@ -408,6 +410,15 @@ class Athemes_Starter_Sites_Importer {
 		 * Re-enable stuff in core
 		 */
 		wp_suspend_cache_invalidation( false );
+		wp_cache_flush();
+
+		foreach ( get_taxonomies() as $tax ) {
+			delete_option( "{$tax}_children" );
+			_get_term_hierarchy( $tax );
+		}
+
+		wp_defer_term_counting( false );
+		wp_defer_comment_counting( false );
 
 		/**
 		 * Flush permalinks.
@@ -731,6 +742,10 @@ class Athemes_Starter_Sites_Importer {
 	 */
 	public function replace_attachment_urls( $content ) {
 
+		if ( is_serialized( $content ) ) {
+			return $content;
+		}
+
 		preg_match_all( '/(?:http(?:s?):)(?:[\/\\\\\\\\|.|\w|\s|-])*\.(?:jpg|jpeg|jpe|png|gif|webp|svg)/m', $content, $image_urls );
 
 		if ( ! empty( $image_urls[0] ) ) {
@@ -757,7 +772,7 @@ class Athemes_Starter_Sites_Importer {
 				$uploads_dir = wp_get_upload_dir();
 				$uploads_url = $uploads_dir['baseurl'];
 
-				$new_url   = esc_url( $uploads_url . '/' . join( '/', $url_parts['path'] ) );
+				$new_url = esc_url( $uploads_url . '/' . join( '/', $url_parts['path'] ) );
 				$content = str_replace( $image_url, $new_url, $content );
 
 			}
@@ -986,11 +1001,10 @@ class Athemes_Starter_Sites_Importer {
 		/**
 		 * Process widgets.json.
 		 */
-
 		// Get JSON data from widgets.json.
 		$raw = wp_remote_get( wp_unslash( $file_url ) );
 
-		// Abort if customizer.json response code is not successful.
+		// Abort if widgets.json response code is not successful.
 		if ( 200 != wp_remote_retrieve_response_code( $raw ) ) {
 			wp_send_json_error();
 		}
@@ -1072,7 +1086,6 @@ class Athemes_Starter_Sites_Importer {
 		/**
 		 * Process customizer.json.
 		 */
-
 		// Get JSON data from customizer.json.
 		$raw = wp_remote_get( wp_unslash( $file_url ) );
 
