@@ -1151,6 +1151,7 @@ class Athemes_Starter_Sites_Importer {
 		$nav_menu_terms = get_terms( array(
 			'taxonomy'   => 'nav_menu',
 			'hide_empty' => false,
+			'meta_key'   => '_athemes_sites_imported_term',
 		) );
 
 		$nav_menu_term_ids = array();
@@ -1174,6 +1175,7 @@ class Athemes_Starter_Sites_Importer {
 			$products = get_posts( array(
 				'post_type'      => 'product',
 				'posts_per_page' => -1,
+				'meta_key'       => '_athemes_sites_imported_post',
 			) );
 			if ( ! is_wp_error( $products ) && ! empty( $products ) ) {
 				foreach ( $products as $product ) {
