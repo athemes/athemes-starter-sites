@@ -275,8 +275,8 @@ function botiga_setup_after_import( $demo_id ) {
 	if ( ! empty( $footer_menu_one ) ) {
 		$nav_menu_widget = get_option( 'widget_nav_menu' );
 		foreach ( $nav_menu_widget as $key => $widget ) {
-			if ( $key != '_multiwidget' ) {
-				if ( empty( $nav_menu_widget[ $key ]['title'] ) && ( in_array( $nav_menu_widget[ $key ]['title'], array( 'Quick links', 'Quick Links' ) ) || $demo_id === 'jewelry' ) ) {
+			if ( $key !== '_multiwidget' ) {
+				if ( ( ! empty( $nav_menu_widget[ $key ]['title'] ) && in_array( $nav_menu_widget[ $key ]['title'], array( 'Quick links', 'Quick Links' ) ) ) || ( empty( $nav_menu_widget[ $key ]['title'] ) && $demo_id === 'jewelry' ) ) {
 					$nav_menu_widget[ $key ]['nav_menu'] = $footer_menu_one->term_id;
 					update_option( 'widget_nav_menu', $nav_menu_widget );
 					$imported_options['options'][] = 'widget_nav_menu';
@@ -290,8 +290,8 @@ function botiga_setup_after_import( $demo_id ) {
 	if ( ! empty( $footer_menu_two ) ) {
 		$nav_menu_widget = get_option( 'widget_nav_menu' );
 		foreach ( $nav_menu_widget as $key => $widget ) {
-			if ( $key != '_multiwidget' ) {
-				if ( empty( $nav_menu_widget[ $key ]['title'] ) && in_array( $nav_menu_widget[ $key ]['title'], array( 'About' ) ) ) {
+			if ( $key !== '_multiwidget' ) {
+				if ( ! empty( $nav_menu_widget[ $key ]['title'] ) && in_array( $nav_menu_widget[ $key ]['title'], array( 'About' ) ) ) {
 					$nav_menu_widget[ $key ]['nav_menu'] = $footer_menu_two->term_id;
 					update_option( 'widget_nav_menu', $nav_menu_widget );
 					$imported_options['options'][] = 'widget_nav_menu';

@@ -369,8 +369,6 @@ class Athemes_Starter_Sites_Importer {
 		/**
 		 * Suspend bunches of stuff in WP core.
 		 */
-		wp_defer_term_counting( true );
-		wp_defer_comment_counting( true );
 		wp_suspend_cache_invalidation( true );
 
 		global $wpdb;
@@ -410,20 +408,6 @@ class Athemes_Starter_Sites_Importer {
 		 * Re-enable stuff in core
 		 */
 		wp_suspend_cache_invalidation( false );
-		wp_cache_flush();
-
-		foreach ( get_taxonomies() as $tax ) {
-			delete_option( "{$tax}_children" );
-			_get_term_hierarchy( $tax );
-		}
-
-		wp_defer_term_counting( false );
-		wp_defer_comment_counting( false );
-
-		/**
-		 * Flush permalinks.
-		 */	
-		flush_rewrite_rules();
 
 		/**
 		 * Action hook.
@@ -1181,6 +1165,21 @@ class Athemes_Starter_Sites_Importer {
 
 		if ( ! empty( $nav_menu_term_ids ) ) {
 			wp_update_term_count_now( $nav_menu_term_ids, 'nav_menu' );
+		}
+
+		/**
+		 * Update stock status to instock (needed for has variation products).
+		 */
+		if ( class_exists( 'WooCommerce' ) ) {
+			$products = get_posts( array(
+				'post_type'      => 'product',
+				'posts_per_page' => -1,
+			) );
+			if ( ! is_wp_error( $products ) && ! empty( $products ) ) {
+				foreach ( $products as $product ) {
+					update_post_meta( $product->ID, '_stock_status', 'instock' );
+				}
+			}
 		}
 
 		/**
