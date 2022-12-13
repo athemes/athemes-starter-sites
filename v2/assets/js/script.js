@@ -1,5 +1,23 @@
 "use strict";
 
+//
+// Embed Drip API
+//
+var _dcq = _dcq || [];
+var _dcs = _dcs || {};
+_dcs.account = 5598225;
+(function () {
+  var dc = document.createElement('script');
+  dc.type = 'text/javascript';
+  dc.async = true;
+  dc.src = '//tag.getdrip.com/' + _dcs.account + '.js';
+  var s = document.getElementsByTagName('script')[0];
+  s.parentNode.insertBefore(dc, s);
+})();
+
+//
+// Demo Importer
+//
 (function ($) {
   'use strict';
 
@@ -212,13 +230,12 @@
             return;
           }
 
-          // Ajax Subscribe
-          // $.post('https://OUR_EMAIL_SERVICE_API.com', {
-          //   email: emailValue,
-          //   countme: countMeValue,
-          // });
+          // send email to drip on Botiga tag.
+          _dcq.push(["identify", {
+            email: emailValue,
+            tags: ["Botiga"]
+          }]);
         }
-
         var $step = $(this).closest('.atss-import-step');
         $step.removeClass('atss-active');
         $step.next().addClass('atss-active');
