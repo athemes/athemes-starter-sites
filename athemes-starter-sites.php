@@ -28,13 +28,13 @@ define( 'ATSS_PATH', plugin_dir_path( __FILE__ ) );
  * The core plugin class that is used to define internationalization,
  * admin-specific hooks, and public-facing site hooks.
  */
-$theme  = wp_get_theme();
-$parent = ( get_template_directory() !== get_stylesheet_directory() && $theme->parent() ) ? $theme->parent() : $theme;
+$theme = wp_get_theme();
+$theme = ( get_template_directory() !== get_stylesheet_directory() && $theme->parent() ) ? $theme->parent() : $theme;
 
 /**
  * Boot version 2, If theme is "Botiga" and version >= 1.2.3+
  */
-if ( ( 'Botiga' === $theme->name || 'Botiga' === $parent->name ) && version_compare( $theme->version, '1.2.3', '>=' ) ) {
+if ( $theme->name === 'Botiga' && version_compare( $theme->version, '1.2.3', '>=' ) ) {
   require_once ATSS_PATH . '/v2/classes/class-core.php';
 } else {
   require_once ATSS_PATH . '/core/class-core.php';
