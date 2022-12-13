@@ -87,6 +87,7 @@ if ( ! class_exists( 'Athemes_Starter_Sites' ) ) {
 				'plugin_url'        => ATSS_URL,
 				'nonce'             => wp_create_nonce( 'nonce' ),
 				'demos'             => $demos,
+				'theme_name'        => $theme->name,
 				'imported'          => get_option( 'atss_current_starter', '' ),
 				'settings'          => $settings,
 				'i18n'              => array(

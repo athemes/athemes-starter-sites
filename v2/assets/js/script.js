@@ -224,16 +224,15 @@ _dcs.account = 5598225;
           var regex = /^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
           var $email = $form.find('.atss-import-subscribe-field-email');
           var emailValue = $email.val();
-          var countMeValue = $form.find('.atss-import-subscribe-field-count-me').is(':checked');
           if (!regex.test(emailValue)) {
             $email.addClass('atss-error').attr('placeholder', window.atss_localize.i18n.invalid_email).val('');
             return;
           }
 
-          // send email to drip on Botiga tag.
+          // send email to drip on theme name tag.
           _dcq.push(["identify", {
             email: emailValue,
-            tags: ["Botiga"]
+            tags: [window.atss_localize.theme_name]
           }]);
         }
         var $step = $(this).closest('.atss-import-step');
