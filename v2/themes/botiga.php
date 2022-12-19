@@ -207,10 +207,6 @@ function botiga_setup_after_import( $demo_id ) {
 	$imported_options['mods']    = array();
 	$imported_options['options'] = array();
 
-	//Update custom css file
-	$css_class = new Botiga_Custom_CSS();
-	$css_class->update_custom_css_file();
-
 	// Track nav menu location for reset.
 	$imported_options['mods'][] = 'nav_menu_locations';
 
@@ -228,18 +224,19 @@ function botiga_setup_after_import( $demo_id ) {
 	// Beauty, Furniture and Single Product Demo Extras
 	if ( in_array( $demo_id, array( 'beauty', 'furniture', 'single-product' ) ) ) {
 
-		update_option( 'botiga-modules', array( 'hf-builder' => true ) );
-
-		// Update custom CSS file to generate mega menu css
-		$custom_css = Botiga_Custom_CSS::get_instance();
-    $custom_css->update_custom_css_file();
+		// Set modules.
+	  $modules = get_option( 'botiga-modules', array() );
+		update_option( 'botiga-modules', array_merge( $modules, array( 'hf-builder' => true ) ) );
 
 	}
 
 	// Apparel Demo Extras
 	if ( $demo_id === 'apparel' ) {
 
-		update_option( 'botiga-modules', array( 'hf-builder' => false ) );
+		// Set modules.
+		// The demo apparel uses the old header system, so we need to disable the HF Builder
+	  $modules = get_option( 'botiga-modules', array() );
+		update_option( 'botiga-modules', array_merge( $modules, array( 'hf-builder' => false ) ) );
 
 		// Assign footer copyright menu
 		$copyright_menu = get_term_by( 'name', 'Footer Copyright', 'nav_menu' );
@@ -254,7 +251,9 @@ function botiga_setup_after_import( $demo_id ) {
 	// Jewelry Demo Extras
 	if ( $demo_id === 'jewelry' ) {
 
-		update_option( 'botiga-modules', array( 'hf-builder' => true, 'mega-menu' => true ) );
+		// Set modules.
+	  $modules = get_option( 'botiga-modules', array() );
+		update_option( 'botiga-modules', array_merge( $modules, array( 'hf-builder' => true, 'mega-menu' => true ) ) );
 
 		// Update custom CSS file with mega menu css
 		if ( class_exists( 'Botiga_Mega_menu' ) ) {
@@ -263,10 +262,6 @@ function botiga_setup_after_import( $demo_id ) {
 			$mega_menu->update_custom_css_file();
 			$imported_options['options'][] = 'botiga-mega-menu-css'; // mega menu css save option name
 		}
-
-		// Update custom CSS file to generate mega menu css
-		$custom_css = Botiga_Custom_CSS::get_instance();
-    $custom_css->update_custom_css_file();
 
 	}
 

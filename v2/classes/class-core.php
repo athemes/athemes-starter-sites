@@ -80,9 +80,9 @@ if ( ! class_exists( 'Athemes_Starter_Sites' ) ) {
 			$theme = wp_get_theme();
 			$theme = ( get_template_directory() !== get_stylesheet_directory() && $theme->parent() ) ? $theme->parent() : $theme;
 
-			wp_enqueue_script( 'athemes-starter-sites', ATSS_URL . 'v2/assets/js/script.min.js', array( 'jquery', 'wp-util', 'underscore' ), '2.0.0', true );
+			wp_enqueue_script( 'athemes-starter-sites-v2', ATSS_URL . 'v2/assets/js/script.min.js', array( 'jquery', 'wp-util', 'underscore' ), '2.0.0', true );
 
-			wp_localize_script( 'athemes-starter-sites', 'atss_localize', array(
+			wp_localize_script( 'athemes-starter-sites-v2', 'atss_localize', array(
 				'ajax_url'          => admin_url( 'admin-ajax.php' ),
 				'plugin_url'        => ATSS_URL,
 				'nonce'             => wp_create_nonce( 'nonce' ),
@@ -99,10 +99,7 @@ if ( ! class_exists( 'Athemes_Starter_Sites' ) ) {
 			) );
 
 			// Select2.
-			wp_enqueue_style( 'athemes-starter-sites', ATSS_URL . 'v2/assets/css/style.css', array(), '2.0.0' );
-
-			// Add RTL support.
-			wp_style_add_data( 'athemes-starter-sites', 'rtl', 'replace' );
+			wp_enqueue_style( 'athemes-starter-sites-v2', ATSS_URL . 'v2/assets/css/style.min.css', array(), '2.0.0' );
 
 		}
 

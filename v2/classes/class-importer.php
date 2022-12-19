@@ -74,7 +74,7 @@ class Athemes_Starter_Sites_Importer {
 		add_action( 'wp_ajax_atss_import_finish', array( $this, 'ajax_import_finish' ) );
 
 		// Hide wpdb errors for avoid wp_send_json brokens.
-		if ( isset( $_POST['action'] ) && $_POST['action'] === 'atss_import_plugin' && WP_DEBUG && WP_DEBUG_DISPLAY ) {
+		if ( isset( $_POST['action'] ) && $_POST['action'] === 'atss_import_plugin' && ( WP_DEBUG || WP_DEBUG_DISPLAY ) ) {
 			global $wpdb;
 			$wpdb->hide_errors();
 		}
@@ -1182,6 +1182,8 @@ class Athemes_Starter_Sites_Importer {
 					update_post_meta( $product->ID, '_stock_status', 'instock' );
 				}
 			}
+			// Flush rewrite rules for shop/listing page.
+			update_option( 'woocommerce_queue_flush_rewrite_rules', 'yes' );
 		}
 
 		/**
