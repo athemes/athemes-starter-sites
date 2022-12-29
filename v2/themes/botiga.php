@@ -189,6 +189,46 @@ function botiga_demos_list() {
 				),
 			),
 		),
+		'multi-vendor' => array(
+			'name'       => esc_html__( 'Multi Vendor', 'athemes-starter-sites' ),
+			'type'       => 'pro',
+			'categories' => array( 'ecommerce' ),
+			'builders'   => array(
+				'gutenberg',
+				'elementor',
+			),
+			'preview'    => 'https://demo.athemes.com/botiga-multi-vendor/',
+			'thumbnail'  => 'https://athemes.com/themes-demo-content/botiga/multi-vendor/thumb.png',
+			'plugins'    => array_merge(
+				$plugins,
+				array(
+					array(
+						'name'     => 'WPForms',
+						'slug'     => 'wpforms-lite',
+						'path'     => 'wpforms-lite/wpforms.php',
+						'required' => false
+					),
+					array(
+						'name'     => 'Dokan',
+						'slug'     => 'dokan-lite',
+						'path'     => 'dokan-lite/dokan.php',
+						'required' => false
+					)
+				),
+			),
+			'import'         => array(
+				'gutenberg'    => array(
+					'content'    => 'https://athemes.com/themes-demo-content/botiga/multi-vendor/botiga-dc-multi-vendor.xml',
+					'widgets'    => 'https://athemes.com/themes-demo-content/botiga/multi-vendor/botiga-w-multi-vendor.wie',
+					'customizer' => 'https://athemes.com/themes-demo-content/botiga/multi-vendor/botiga-c-multi-vendor.dat'
+				),
+				'elementor'    => array(
+					'content'    => 'https://athemes.com/themes-demo-content/botiga/elementor/multi-vendor/botiga-dc-multi-vendor-el.xml',
+					'widgets'    => 'https://athemes.com/themes-demo-content/botiga/elementor/multi-vendor/botiga-w-multi-vendor-el.wie',
+					'customizer' => 'https://athemes.com/themes-demo-content/botiga/elementor/multi-vendor/botiga-c-multi-vendor-el.dat'
+				),
+			),
+		),
 	);
 
 	return $demos;
@@ -222,11 +262,28 @@ function botiga_setup_after_import( $demo_id ) {
 	}
 
 	// Beauty, Furniture and Single Product Demo Extras
-	if ( in_array( $demo_id, array( 'beauty', 'furniture', 'single-product' ) ) ) {
+	if ( in_array( $demo_id, array( 'beauty', 'furniture', 'single-product', 'multi-vendor' ) ) ) {
 
 		// Set modules.
 	  $modules = get_option( 'botiga-modules', array() );
 		update_option( 'botiga-modules', array_merge( $modules, array( 'hf-builder' => true ) ) );
+
+	}
+
+	// Multi Vendor Demo Extras
+	if ( $demo_id === 'multi-vendor' ) {
+
+		// Set modules.
+	  $modules = get_option( 'botiga-modules', array() );
+		update_option( 'botiga-modules', array_merge( $modules, array( 'hf-builder' => true, 'mega-menu' => true, 'size-chart' => true, 'product-swatches' => true ) ) );
+
+		// Assign secondary menu
+		$secondary_menu = get_term_by( 'name', 'Trending Categories', 'nav_menu' );
+		if ( ! empty( $secondary_menu ) ) {
+			$locations = get_theme_mod( 'nav_menu_locations', array() );
+			$locations['secondary'] = $secondary_menu->term_id;
+			set_theme_mod( 'nav_menu_locations', $locations );
+		}
 
 	}
 
