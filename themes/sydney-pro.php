@@ -51,7 +51,7 @@ function sydney_atss_demos_list() {
 				'widgets'    => 'https://athemes.com/themes-demo-content/sydney/main-pro/widgets.wie',
 				'customizer' => 'https://athemes.com/themes-demo-content/sydney/main-pro/customizer-pro.dat',
 			),
-		),
+		),		
 		'fashion'     => array(
 			'name'       => esc_html__( 'Fashion Shop', 'sydney' ),
 			'type'       => 'free',
@@ -104,6 +104,32 @@ function sydney_atss_demos_list() {
 				'customizer' => 'https://athemes.com/themes-demo-content/sydney/plumber/customizer-pro.dat',
 			),
 		),
+		'photography'     => array(
+			'name'       => esc_html__( 'Photography', 'sydney' ),
+			'type'       => 'free',
+			'categories' => array( 'business' ),
+			'builders'   => array(
+				'elementor',
+			),
+			'preview'    => 'https://demo.athemes.com/sydney-photography/',
+			'thumbnail'  => 'https://athemes.com/themes-demo-content/sydney/photography/thumb.jpg',
+			'plugins'    => array_merge(
+				array(
+					array(
+						'name'     => 'WPForms',
+						'slug'     => 'wpforms-lite',
+						'path'     => 'wpforms-lite/wpforms.php',
+						'required' => false
+					)
+				),
+				$plugins
+			),
+			'import'     => array(
+				'content'    => 'https://athemes.com/themes-demo-content/sydney/photography/content.xml',
+				'widgets'    => 'https://athemes.com/themes-demo-content/sydney/photography/widgets.wie',
+				'customizer' => 'https://athemes.com/themes-demo-content/sydney/photography/customizer-pro.dat',
+			),
+		),		
 		'construction'   => array(
 			'name'       => esc_html__( 'Construction', 'sydney' ),
 			'type'       => 'pro',
