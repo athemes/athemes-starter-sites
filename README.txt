@@ -68,6 +68,16 @@ Go to Plugins > Add New and search for aThemes Starter Sites. Install and activa
 
 == Changelog ==
 
+= 1.0.29 =
+* New Botiga import workflow
+* New starter site added for Botiga Pro
+
+= 1.0.28 =
+* Notice removed
+
+= 1.0.26 =
+* Added a notice
+
 = 1.0.25 =
 * Removed outdated starter sites from Sydney Pro
 

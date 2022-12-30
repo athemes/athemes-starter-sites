@@ -77,7 +77,7 @@ function sydney_atss_demos_list() {
 				'widgets'    => 'https://athemes.com/themes-demo-content/sydney/fashion/widgets.wie',
 				'customizer' => 'https://athemes.com/themes-demo-content/sydney/fashion/customizer.dat',
 			),
-		),
+		),		
 		'plumber'     => array(
 			'name'       => esc_html__( 'Plumber', 'sydney' ),
 			'type'       => 'free',
@@ -104,6 +104,32 @@ function sydney_atss_demos_list() {
 				'customizer' => 'https://athemes.com/themes-demo-content/sydney/plumber/customizer.dat',
 			),
 		),
+		'photography'     => array(
+			'name'       => esc_html__( 'Photography', 'sydney' ),
+			'type'       => 'free',
+			'categories' => array( 'business' ),
+			'builders'   => array(
+				'elementor',
+			),
+			'preview'    => 'https://demo.athemes.com/sydney-photography/',
+			'thumbnail'  => 'https://athemes.com/themes-demo-content/sydney/photography/thumb.jpg',
+			'plugins'    => array_merge(
+				array(
+					array(
+						'name'     => 'WPForms',
+						'slug'     => 'wpforms-lite',
+						'path'     => 'wpforms-lite/wpforms.php',
+						'required' => false
+					)
+				),
+				$plugins
+			),
+			'import'     => array(
+				'content'    => 'https://athemes.com/themes-demo-content/sydney/photography/content.xml',
+				'widgets'    => 'https://athemes.com/themes-demo-content/sydney/photography/widgets.wie',
+				'customizer' => 'https://athemes.com/themes-demo-content/sydney/photography/customizer.dat',
+			),
+		),		
 		'main-pro' => array(
 			'name'       => esc_html__( 'Agency', 'sydney' ),
 			'type'       => 'pro',
@@ -402,6 +428,38 @@ function sydney_atss_demos_list() {
 				'content'    => 'https://athemes.com/themes-demo-content/sydney/resume/content.xml',
 				'widgets'    => 'https://athemes.com/themes-demo-content/sydney/resume/widgets.wie',
 				'customizer' => 'https://athemes.com/themes-demo-content/sydney/resume/customizer.dat',
+			),
+		),		
+		'author'       => array(
+			'name'       => esc_html__( 'Author', 'sydney' ),
+			'type'       => 'pro',
+			'categories' => array( 'portfolio', 'ecommerce' ),
+			'builders'   => array(
+				'elementor',
+			),
+			'preview'    => 'https://demo.athemes.com/author/',
+			'thumbnail'  => 'https://athemes.com/themes-demo-content/sydney/author/thumb.jpg',
+			'plugins'    => array_merge(
+				array(
+					array(
+						'name'     => 'WooCommerce',
+						'slug'     => 'woocommerce',
+						'path'     => 'woocommerce/woocommerce.php',
+						'required' => false,
+					),
+					array(
+						'name'     => 'WPForms',
+						'slug'     => 'wpforms-lite',
+						'path'     => 'wpforms-lite/wpforms.php',
+						'required' => false
+					)
+				),
+				$plugins
+			),
+			'import'     => array(
+				'content'    => 'https://athemes.com/themes-demo-content/sydney/author/content.xml',
+				'widgets'    => 'https://athemes.com/themes-demo-content/sydney/author/widgets.wie',
+				'customizer' => 'https://athemes.com/themes-demo-content/sydney/author/customizer.dat',
 			),
 		),		
 	);
