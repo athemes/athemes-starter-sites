@@ -102,23 +102,7 @@ _dcs.account = 5598225;
       $form.find('.atss-import-progress-indicator').attr( 'style', '--atss-indicator: 100%;' );
 
       // Tweet
-      var timeText = 'minutes';
-
-      if ( atssTakenTime < 300 ) {
-
-        var dateObj = new Date();
-
-        dateObj.setTime(atssTakenTime * 1000);
-
-        if ( dateObj.getMinutes() > 0 ) {
-          timeText = dateObj.getMinutes() +'.'+ String(dateObj.getSeconds()).padStart(2, '0') +' minutes';
-        } else {
-          timeText = dateObj.getSeconds() +' seconds';
-        }
-
-      }
-
-      var tweetText = window.atss_localize.i18n.tweet_text.replace('{0}', timeText);
+      var tweetText = window.atss_localize.i18n.tweet_text.replace('{0}', atssTakenTime);
 
       $form.find('.atss-import-finish-tweet-text').html( tweetText );
       $form.find('.atss-import-finish-tweet-button').attr('href', 'https://twitter.com/intent/tweet?text='+ tweetText );
@@ -338,10 +322,15 @@ _dcs.account = 5598225;
       $atss.on('change', '.atss-import-builder-select input', function( e ) {
 
         $atss.find('.atss-import-plugin-builder').addClass('atss-hidden');
-        $atss.find('.atss-import-plugin-builder input').removeAtrr('checked');
+        $atss.find('.atss-import-plugin-builder input').prop('checked', false);
 
         if ( $(this).is(':checked') ) {
-          $atss.find('.atss-import-plugin-'+ $(this).data('builder-plugin') +' input').atrr('checked', 'checked');
+
+          var $builder = $atss.find('.atss-import-plugin-'+ $(this).data('builder-plugin'));
+
+          $builder.removeClass('atss-hidden');
+          $builder.find('input').prop('checked', true);
+
         }
 
       });

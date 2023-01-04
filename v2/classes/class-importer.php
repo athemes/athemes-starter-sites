@@ -833,7 +833,17 @@ class Athemes_Starter_Sites_Importer {
 
 		if ( ! empty( $data['file'] ) ) {
 
-			list( $image_width, $image_height, $image_type ) = @getimagesize( $data['file'] );
+			$imagedata = @getimagesize( $data['file'] );
+
+			if ( empty( $imagedata ) ) {
+				return $data;
+			}
+
+			list( $image_width, $image_height, $image_type ) = $imagedata;
+
+			if ( empty( $image_width ) || empty( $image_height ) || empty( $image_type ) ) {
+				return $data;
+			}
 
 			$image = @imagecreatetruecolor( $image_width, $image_height );
 
