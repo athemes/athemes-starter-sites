@@ -209,6 +209,19 @@ _dcs.account = 5598225;
           $builder.find('input').prop('checked', true);
         }
       });
+      $atss.on('click', '.atss-import-with-content-type', function () {
+        var isChecked = true;
+        $('.atss-import-with-content-type').each(function () {
+          if (!$(this).is(':checked')) {
+            isChecked = false;
+          }
+        });
+        if (isChecked) {
+          $atss.find('.atss-import-content-select').removeClass('atss-hidden');
+        } else {
+          $atss.find('.atss-import-content-select').addClass('atss-hidden');
+        }
+      });
       $atss.on('click', '.atss-import-start-button', function (e) {
         e.preventDefault();
         var $form = $atss.find('.atss-import-form');

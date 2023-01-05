@@ -63,6 +63,7 @@
 .atss-import-image-select input{display:none}
 .atss-import-image-select input:checked+figure{border-color:#274bdb}
 .atss-import-image-select input:checked+figure:before{display:-webkit-box;display:-ms-flexbox;display:flex}
+.atss-import-content-select.atss-hidden{display:none}
 .atss-import-checkboxes{display:-webkit-box;display:-ms-flexbox;display:flex;grid-gap:15px;-webkit-box-orient:vertical;-webkit-box-direction:normal;-ms-flex-direction:column;flex-direction:column}
 .atss-import-checkboxes label{display:-webkit-box;display:-ms-flexbox;display:flex;grid-gap:10px;-webkit-box-align:center;-ms-flex-align:center;align-items:center;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}
 .atss-import-checkboxes span{display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-align:center;-ms-flex-align:center;align-items:center;width:30px;height:16px;border-radius:30px;border:1px solid #464646;background-color:#fff;-webkit-transition:all .1s;transition:all .1s}

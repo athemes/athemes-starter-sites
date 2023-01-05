@@ -449,6 +449,13 @@
   }
 }
 
+.atss-import-content-select{
+
+  &.atss-hidden{
+    display: none;
+  }
+}
+
 .atss-import-checkboxes{
   display: flex;
   grid-gap: 15px;

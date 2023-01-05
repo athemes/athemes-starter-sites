@@ -316,14 +316,15 @@ class ATSS_Demos_Page {
 							<div class="atss-import-close-button"><i class="dashicons dashicons-no-alt"></i></div>
 						</div>
 						<div class="atss-import-content">
-							<div class="atss-import-content-block">
+							<# var isShowContentType = ( data.args.imported ) ? ' atss-hidden' : ''; #>
+							<div class="atss-import-content-block atss-import-content-select{{ isShowContentType }}">
 								<div class="atss-import-toggle atss-active">
 									<div class="atss-import-toggle-title atss-import-toggle-button">
 										<?php esc_html_e( 'Content Type', 'athemes-starter-sites' ); ?>
 										<i class="atss-import-toggle-icon dashicons dashicons-arrow-up-alt2"></i>
 									</div>
 									<div class="atss-import-toggle-content">
-										<div class="atss-import-image-select atss-import-content-select">
+										<div class="atss-import-image-select">
 											<label class="atss-import-image-select-item">
 												<input type="radio" name="content_type" value="entire-site" checked="checked" />
 												<figure>
@@ -351,7 +352,7 @@ class ATSS_Demos_Page {
 									<div class="atss-import-toggle-content">
 										<div class="atss-import-checkboxes">
 											<label>
-												<input type="checkbox" data-action="atss_import_contents" data-priority="40" data-log="<?php esc_html_e( 'Importing contents...', 'athemes-starter-sites' ); ?>" checked="checked" />
+												<input type="checkbox" data-action="atss_import_contents" class="atss-import-with-content-type" data-priority="40" data-log="<?php esc_html_e( 'Importing contents...', 'athemes-starter-sites' ); ?>" checked="checked" />
 												<span><i></i></span>
 												<?php esc_html_e( 'Content', 'athemes-starter-sites' ); ?>
 											</label>
@@ -369,7 +370,7 @@ class ATSS_Demos_Page {
 										<# if ( data.args.imported ) { #>
 											<div class="atss-import-checkboxes atss-import-clean-checkboxes">
 												<label>
-													<input type="checkbox" data-action="atss_import_clean" data-priority="10" data-log="<?php esc_html_e( 'Cleaning previous import data...', 'athemes-starter-sites' ); ?>" />
+													<input type="checkbox" data-action="atss_import_clean" class="atss-import-with-content-type" data-priority="10" data-log="<?php esc_html_e( 'Cleaning previous import data...', 'athemes-starter-sites' ); ?>" />
 													<span><i></i></span>
 													<?php esc_html_e( 'Clean Install', 'athemes-starter-sites' ); ?>
 												</label>
