@@ -241,18 +241,6 @@ add_filter( 'atss_register_demos_list', 'botiga_demos_list' );
  */
 function botiga_setup_after_import( $demo_id ) {
 
-	// Track options
-	$imported_options = get_option( '_athemes_sites_imported_options', array() );
-
-	$imported_options['mods']    = array();
-	$imported_options['options'] = array();
-
-	// Track nav menu location for reset.
-	$imported_options['mods'][] = 'nav_menu_locations';
-
-	// Track modules for reset.
-	$imported_options['options'][] = 'botiga-modules';
-
 	// Assign the menu.
 	$main_menu = get_term_by( 'name', 'Main', 'nav_menu' );
 	if ( ! empty( $main_menu ) ) {
@@ -317,7 +305,6 @@ function botiga_setup_after_import( $demo_id ) {
 			$mega_menu = Botiga_Mega_Menu::get_instance();
 			$mega_menu->save_mega_menu_css_as_option();
 			$mega_menu->update_custom_css_file();
-			$imported_options['options'][] = 'botiga-mega-menu-css'; // mega menu css save option name
 		}
 
 	}
@@ -331,7 +318,6 @@ function botiga_setup_after_import( $demo_id ) {
 				if ( ( ! empty( $nav_menu_widget[ $key ]['title'] ) && in_array( $nav_menu_widget[ $key ]['title'], array( 'Quick links', 'Quick Links' ) ) ) || ( empty( $nav_menu_widget[ $key ]['title'] ) && $demo_id === 'jewelry' ) ) {
 					$nav_menu_widget[ $key ]['nav_menu'] = $footer_menu_one->term_id;
 					update_option( 'widget_nav_menu', $nav_menu_widget );
-					$imported_options['options'][] = 'widget_nav_menu';
 				}
 			}
 		}
@@ -346,7 +332,6 @@ function botiga_setup_after_import( $demo_id ) {
 				if ( ! empty( $nav_menu_widget[ $key ]['title'] ) && in_array( $nav_menu_widget[ $key ]['title'], array( 'About' ) ) ) {
 					$nav_menu_widget[ $key ]['nav_menu'] = $footer_menu_two->term_id;
 					update_option( 'widget_nav_menu', $nav_menu_widget );
-					$imported_options['options'][] = 'widget_nav_menu';
 				}
 			}
 		}
@@ -354,55 +339,47 @@ function botiga_setup_after_import( $demo_id ) {
 
 	// Asign the front as page.
 	update_option( 'show_on_front', 'page' );
-	$imported_options['options'][] = 'show_on_front';
 
 	// Asign the front page.
 	$front_page = get_page_by_title( 'Home' );
 	if ( ! empty( $front_page ) ) {
 		update_option( 'page_on_front', $front_page->ID );
-		$imported_options['options'][] = 'page_on_front';
 	}
 
 	// Asign the blog page.
 	$blog_page  = get_page_by_title( 'Blog' );
 	if ( ! empty( $blog_page ) ) {
 		update_option( 'page_for_posts', $blog_page->ID );
-		$imported_options['options'][] = 'page_for_posts';
 	}
 
 	// My wishlist page
 	$wishlist_page = get_page_by_title( 'My Wishlist' );
 	if ( ! empty( $wishlist_page ) ) {
 		update_option( 'botiga_wishlist_page_id', $wishlist_page->ID );
-		$imported_options['options'][] = 'botiga_wishlist_page_id';
 	}
 
 	// Asign the shop page.
 	$shop_page = ( 'single-product' === $demo_id ) ? get_page_by_title( 'Listing' ) : get_page_by_title( 'Shop' );
 	if ( ! empty( $shop_page ) ) {
 		update_option( 'woocommerce_shop_page_id', $shop_page->ID );
-		$imported_options['options'][] = 'woocommerce_shop_page_id';
 	}
 
 	// Asign the cart page.
 	$cart_page = get_page_by_title( 'Cart' );
 	if ( ! empty( $cart_page ) ) {
 		update_option( 'woocommerce_cart_page_id', $cart_page->ID );
-		$imported_options['options'][] = 'woocommerce_cart_page_id';
 	}
 
 	// Asign the checkout page.
 	$checkout_page  = get_page_by_title( 'Checkout' );
 	if ( ! empty( $checkout_page ) ) {
 		update_option( 'woocommerce_checkout_page_id', $checkout_page->ID );
-		$imported_options['options'][] = 'woocommerce_checkout_page_id';
 	}
 
 	// Asign the myaccount page.
 	$myaccount_page = get_page_by_title( 'My Account' );
 	if ( ! empty( $myaccount_page ) ) {
 		update_option( 'woocommerce_myaccount_page_id', $myaccount_page->ID );
-		$imported_options['options'][] = 'woocommerce_myaccount_page_id';
 	}
 
 	// Update custom CSS
