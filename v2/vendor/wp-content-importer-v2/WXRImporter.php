@@ -1938,8 +1938,22 @@ class ATSS_WXRImporter extends WP_Importer {
 		// extract the file name and extension from the url
 		$file_name = basename( $url );
 
+		// force to use exists file.
+		$upload_dir  = wp_upload_dir( $post['upload_date'] );
+		$exists_file = $upload_dir['path'] .'/'. $file_name;
+		$exists_url  = $upload_dir['url'] .'/'. $file_name;
+
+		if ( file_exists( $exists_file ) ) {
+			$upload = array(
+				'file' => $exists_file,
+				'url'  => $exists_url,
+			);
+			return $upload;
+		}
+
 		// get placeholder file in the upload dir with a unique, sanitized filename
 		$upload = wp_upload_bits( $file_name, 0, '', $post['upload_date'] );
+
 		if ( $upload['error'] ) {
 			return new WP_Error( 'upload_dir_error', $upload['error'] );
 		}

@@ -59,8 +59,12 @@ _dcs.account = 5598225;
           $form.find('.atss-import-error-log').html(response.data);
           $body.removeClass('atss-import-in-progress');
         } else {
+          var errorLog = window.atss_localize.i18n.import_failed;
+          if (response) {
+            errorLog += '<div class="atss-import-error-response">' + _.escape(response) + '</div>';
+          }
           $form.find('.atss-import-step-error').addClass('atss-active').siblings().removeClass('atss-active');
-          $form.find('.atss-import-error-log').html(window.atss_localize.i18n.import_failed);
+          $form.find('.atss-import-error-log').html(errorLog);
           $body.removeClass('atss-import-in-progress');
         }
       }).fail(function () {
