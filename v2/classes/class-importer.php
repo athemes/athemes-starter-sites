@@ -305,9 +305,7 @@ class Athemes_Starter_Sites_Importer {
 					$imported_widget_ids = array_merge( $imported_widget_ids, $imported_widget );
 				}
 			}
-
 			$sidebars_widgets = get_option( 'sidebars_widgets', array() );
-
 			if ( ! empty( $imported_widget_ids ) && ! empty( $sidebars_widgets ) ) {
 				foreach ( $sidebars_widgets as $sidebar_id => $widgets ) {
 					if ( ! empty( $widgets ) && is_array( $widgets ) ) {
@@ -320,34 +318,14 @@ class Athemes_Starter_Sites_Importer {
 						}
 					}
 				}
-
 				update_option( 'sidebars_widgets', $sidebars_widgets );
-
-			}
-
-		}
-
-		/**
-		 * Clean imported customizer mods.
-		 */
-		$imported_customizer_mods = get_option( '_athemes_sites_imported_customizer_mods', array() );
-
-		if ( ! empty( $imported_customizer_mods ) ) {
-			foreach ( $imported_customizer_mods as $mod_key => $mod_name ) {
-				remove_theme_mod( $mod_key );
 			}
 		}
 
 		/**
-		 * Clean imported customizer options.
+		 * Clean customizer settings.
 		 */
-		$imported_customizer_options = get_option( '_athemes_sites_imported_customizer_options', array() );
-
-		if ( ! empty( $imported_customizer_options ) ) {
-			foreach ( $imported_customizer_options as $option_key => $option_name ) {
-				delete_option( $option_key );
-			}
-		}
+		$this->clean_customizer_settings();
 
 		/**
 		 * Clean imported options.
@@ -419,14 +397,48 @@ class Athemes_Starter_Sites_Importer {
 		 */
 		delete_option( '_athemes_sites_imported_plugins' );
 		delete_option( '_athemes_sites_imported_widgets' );
-		delete_option( '_athemes_sites_imported_customizer_mods' );
-		delete_option( '_athemes_sites_imported_customizer_options' );
 		delete_option( '_athemes_sites_imported_options' );
 
 		/**
 		 * Return successful AJAX.
 		 */
 		wp_send_json_success();
+
+	}
+
+	public function clean_customizer_settings() {
+
+		/**
+		 * Clean imported customizer mods.
+		 */
+		$imported_customizer_mods = get_option( '_athemes_sites_imported_customizer_mods', array() );
+
+		if ( ! empty( $imported_customizer_mods ) ) {
+
+			foreach ( $imported_customizer_mods as $mod_key => $mod_name ) {
+				remove_theme_mod( $mod_key );
+			}
+
+			remove_theme_mods();
+
+			delete_option( '_athemes_sites_imported_customizer_mods' );
+
+		}
+
+		/**
+		 * Clean imported customizer options.
+		 */
+		$imported_customizer_options = get_option( '_athemes_sites_imported_customizer_options', array() );
+
+		if ( ! empty( $imported_customizer_options ) ) {
+
+			foreach ( $imported_customizer_options as $option_key => $option_name ) {
+				delete_option( $option_key );
+			}
+
+			delete_option( '_athemes_sites_imported_customizer_options' );
+
+		}
 
 	}
 
@@ -546,7 +558,7 @@ class Athemes_Starter_Sites_Importer {
 			$temp_file = download_url( $xml_file_url, $timeout_seconds );
 
 			if ( is_wp_error( $temp_file ) ) {
-				wp_send_json_error( $temp_file->get_error_message() );
+				wp_send_json_error( esc_html__( 'Failed to download temporary demo xml file.', 'athemes-starter-sites' ) );
 			}
 
 			// Array based on $_FILE as seen in PHP file uploads.
@@ -571,7 +583,7 @@ class Athemes_Starter_Sites_Importer {
 
 			// Error when downloading XML file.
 			if ( isset( $download_response['error'] ) ) {
-				wp_send_json_error( $download_response['error'] );
+				wp_send_json_error( esc_html__( 'Failed to download demo xml file.', 'athemes-starter-sites' ) );
 			}
 
 			// Define the downloaded contents.xml file path.
@@ -664,7 +676,7 @@ class Athemes_Starter_Sites_Importer {
 
 		// Is error ?.
 		if ( is_wp_error( $importer ) ) {
-			wp_send_json_error( $importer->get_error_message() );
+			wp_send_json_error( esc_html__( 'An error occurred while importing contents.', 'athemes-starter-sites' ) );
 		}
 
 		if ( $logger->error_output ) {
@@ -1000,7 +1012,7 @@ class Athemes_Starter_Sites_Importer {
 
 		// Abort if widgets.json response code is not successful.
 		if ( 200 != wp_remote_retrieve_response_code( $raw ) ) {
-			wp_send_json_error();
+			wp_send_json_error( esc_html__( 'Failed to load widget demo file.', 'athemes-starter-sites' ) );
 		}
 
 		// Decode raw JSON string to associative array.
@@ -1085,8 +1097,11 @@ class Athemes_Starter_Sites_Importer {
 
 		// Abort if customizer.json response code is not successful.
 		if ( 200 != wp_remote_retrieve_response_code( $raw ) ) {
-			wp_send_json_error();
+			wp_send_json_error( esc_html__( 'Failed to load customizer demo file.', 'athemes-starter-sites' ) );
 		}
+
+		// Clean customizer settings.
+		$this->clean_customizer_settings();
 
 		// Decode raw JSON string to associative array.
 		$data = maybe_unserialize( wp_remote_retrieve_body( $raw ), true );
@@ -1099,9 +1114,7 @@ class Athemes_Starter_Sites_Importer {
 		$results = $customizer->import( $data );
 
 		if ( is_wp_error( $results ) ) {
-			$error_message = $results->get_error_message();
-
-			wp_send_json_error( $error_message );
+			wp_send_json_error( esc_html__( 'An error occurred while importing customizer.', 'athemes-starter-sites' ) );
 		}
 
 		/**
