@@ -242,12 +242,6 @@ class Athemes_Starter_Sites_Importer {
 			wp_send_json_error( esc_html__( 'You are not permitted to start demo.', 'athemes-starter-sites' ) );
 		}
 
-		update_option( '_athemes_sites_imported_plugins', array() );
-		update_option( '_athemes_sites_imported_widgets', array() );
-		update_option( '_athemes_sites_imported_customizer_mods', array() );
-		update_option( '_athemes_sites_imported_customizer_options', array() );
-		update_option( '_athemes_sites_imported_options', array() );
-
 		/**
 		 * Action hook.
 		 */
@@ -278,92 +272,6 @@ class Athemes_Starter_Sites_Importer {
 
 		if ( ! current_user_can( 'edit_theme_options' ) ) {
 			wp_send_json_error( esc_html__( 'You are not permitted to clean previous import.', 'athemes-starter-sites' ) );
-		}
-
-		/**
-		 * Deactivate imported plugins.
-		 */
-		// $imported_plugins = get_option( '_athemes_sites_imported_plugins', array() );
-
-		// if ( ! empty( $imported_plugins ) ) {
-		// 	foreach ( $imported_plugins as $plugin_path ) {
-		// 		if ( is_plugin_active( $plugin_path ) ) {
-		// 			deactivate_plugins( $plugin_path );
-		// 		}
-		// 	}
-		// }
-
-		/**
-		 * Clean imported widgets.
-		 */
-		$imported_widgets = get_option( '_athemes_sites_imported_widgets', array() );
-
-		if ( ! empty( $imported_widgets ) ) {
-			$imported_widget_ids = array();
-			foreach ( $imported_widgets as $imported_widget ) {
-				if ( ! empty( $imported_widget ) && is_array( $imported_widget ) ) {
-					$imported_widget_ids = array_merge( $imported_widget_ids, $imported_widget );
-				}
-			}
-
-			$sidebars_widgets = get_option( 'sidebars_widgets', array() );
-
-			if ( ! empty( $imported_widget_ids ) && ! empty( $sidebars_widgets ) ) {
-				foreach ( $sidebars_widgets as $sidebar_id => $widgets ) {
-					if ( ! empty( $widgets ) && is_array( $widgets ) ) {
-						$widgets = (array) $widgets;
-						foreach ( $widgets as $widget_id ) {
-							if ( in_array( $widget_id, $imported_widget_ids, true ) ) {
-								$sidebars_widgets['wp_inactive_widgets'][] = $widget_id;
-								$sidebars_widgets[ $sidebar_id ] = array_diff( $sidebars_widgets[ $sidebar_id ], array( $widget_id ) );
-							}
-						}
-					}
-				}
-
-				update_option( 'sidebars_widgets', $sidebars_widgets );
-
-			}
-
-		}
-
-		/**
-		 * Clean imported customizer mods.
-		 */
-		$imported_customizer_mods = get_option( '_athemes_sites_imported_customizer_mods', array() );
-
-		if ( ! empty( $imported_customizer_mods ) ) {
-			foreach ( $imported_customizer_mods as $mod_key => $mod_name ) {
-				remove_theme_mod( $mod_key );
-			}
-		}
-
-		/**
-		 * Clean imported customizer options.
-		 */
-		$imported_customizer_options = get_option( '_athemes_sites_imported_customizer_options', array() );
-
-		if ( ! empty( $imported_customizer_options ) ) {
-			foreach ( $imported_customizer_options as $option_key => $option_name ) {
-				delete_option( $option_key );
-			}
-		}
-
-		/**
-		 * Clean imported options.
-		 */
-		$imported_options = get_option( '_athemes_sites_imported_options', array() );
-
-		if ( ! empty( $imported_options['mods'] ) ) {
-			foreach ( $imported_options['mods'] as $name ) {
-				remove_theme_mod( $name );
-			}
-		}
-
-		if ( ! empty( $imported_options['options'] ) ) {
-			foreach ( $imported_options['options'] as $name ) {
-				delete_option( $name );
-			}
 		}
 
 		/**
@@ -410,23 +318,103 @@ class Athemes_Starter_Sites_Importer {
 		wp_suspend_cache_invalidation( false );
 
 		/**
+		 * Clean widget settings.
+		 */
+		$this->clean_widget_settings();
+
+		/**
+		 * Clean customizer settings.
+		 */
+		$this->clean_customizer_settings();
+
+		/**
 		 * Action hook.
 		 */
 		do_action( 'atss_import_clean' );
 
 		/**
-		 * Clean options.
-		 */
-		delete_option( '_athemes_sites_imported_plugins' );
-		delete_option( '_athemes_sites_imported_widgets' );
-		delete_option( '_athemes_sites_imported_customizer_mods' );
-		delete_option( '_athemes_sites_imported_customizer_options' );
-		delete_option( '_athemes_sites_imported_options' );
-
-		/**
 		 * Return successful AJAX.
 		 */
 		wp_send_json_success();
+
+	}
+
+	/**
+	 * Clean widget settings. 
+	 */
+	public function clean_widget_settings() {
+
+		$imported_widgets = get_option( '_athemes_sites_imported_widgets', array() );
+
+		if ( ! empty( $imported_widgets ) ) {
+
+			$imported_widget_ids = array();
+
+			foreach ( $imported_widgets as $imported_widget ) {
+				if ( ! empty( $imported_widget ) && is_array( $imported_widget ) ) {
+					$imported_widget_ids = array_merge( $imported_widget_ids, $imported_widget );
+				}
+			}
+
+			$sidebars_widgets = get_option( 'sidebars_widgets', array() );
+
+			if ( ! empty( $imported_widget_ids ) && ! empty( $sidebars_widgets ) ) {
+				foreach ( $sidebars_widgets as $sidebar_id => $widgets ) {
+					if ( ! empty( $widgets ) && is_array( $widgets ) ) {
+						$widgets = (array) $widgets;
+						foreach ( $widgets as $widget_id ) {
+							if ( in_array( $widget_id, $imported_widget_ids, true ) ) {
+								$sidebars_widgets['wp_inactive_widgets'][] = $widget_id;
+								$sidebars_widgets[ $sidebar_id ] = array_diff( $sidebars_widgets[ $sidebar_id ], array( $widget_id ) );
+							}
+						}
+					}
+				}
+				update_option( 'sidebars_widgets', $sidebars_widgets );
+			}
+
+			delete_option( '_athemes_sites_imported_widgets' );
+
+		}
+
+	}
+
+	/**
+	 * Clean customizer settings. 
+	 */
+	public function clean_customizer_settings() {
+
+		/**
+		 * Clean imported customizer mods.
+		 */
+		$imported_customizer_mods = get_option( '_athemes_sites_imported_customizer_mods', array() );
+
+		if ( ! empty( $imported_customizer_mods ) ) {
+
+			foreach ( $imported_customizer_mods as $mod_key => $mod_name ) {
+				remove_theme_mod( $mod_key );
+			}
+
+			remove_theme_mods();
+
+			delete_option( '_athemes_sites_imported_customizer_mods' );
+
+		}
+
+		/**
+		 * Clean imported customizer options.
+		 */
+		$imported_customizer_options = get_option( '_athemes_sites_imported_customizer_options', array() );
+
+		if ( ! empty( $imported_customizer_options ) ) {
+
+			foreach ( $imported_customizer_options as $option_key => $option_name ) {
+				delete_option( $option_key );
+			}
+
+			delete_option( '_athemes_sites_imported_customizer_options' );
+
+		}
 
 	}
 
@@ -481,15 +469,7 @@ class Athemes_Starter_Sites_Importer {
 		 * Return successful AJAX.
 		 */
 		if ( 'active' === $this->get_plugin_status( $path ) ) {
-
-			$plugins = get_option( '_athemes_sites_imported_plugins', array() );
-
-			$plugins[] = $path;
-
-			update_option( '_athemes_sites_imported_plugins', $plugins );
-
 			wp_send_json_success();
-
 		}
 
 		wp_send_json_error( esc_html__( 'Failed to initialize or activate importer plugin.', 'athemes-starter-sites' ) );
@@ -546,7 +526,7 @@ class Athemes_Starter_Sites_Importer {
 			$temp_file = download_url( $xml_file_url, $timeout_seconds );
 
 			if ( is_wp_error( $temp_file ) ) {
-				wp_send_json_error( $temp_file->get_error_message() );
+				wp_send_json_error( esc_html__( 'Failed to download temporary demo xml file.', 'athemes-starter-sites' ) );
 			}
 
 			// Array based on $_FILE as seen in PHP file uploads.
@@ -571,7 +551,7 @@ class Athemes_Starter_Sites_Importer {
 
 			// Error when downloading XML file.
 			if ( isset( $download_response['error'] ) ) {
-				wp_send_json_error( $download_response['error'] );
+				wp_send_json_error( esc_html__( 'Failed to download demo xml file.', 'athemes-starter-sites' ) );
 			}
 
 			// Define the downloaded contents.xml file path.
@@ -664,7 +644,7 @@ class Athemes_Starter_Sites_Importer {
 
 		// Is error ?.
 		if ( is_wp_error( $importer ) ) {
-			wp_send_json_error( $importer->get_error_message() );
+			wp_send_json_error( esc_html__( 'An error occurred while importing contents.', 'athemes-starter-sites' ) );
 		}
 
 		if ( $logger->error_output ) {
@@ -833,7 +813,17 @@ class Athemes_Starter_Sites_Importer {
 
 		if ( ! empty( $data['file'] ) ) {
 
-			list( $image_width, $image_height, $image_type ) = @getimagesize( $data['file'] );
+			$imagedata = @getimagesize( $data['file'] );
+
+			if ( empty( $imagedata ) ) {
+				return $data;
+			}
+
+			list( $image_width, $image_height, $image_type ) = $imagedata;
+
+			if ( empty( $image_width ) || empty( $image_height ) || empty( $image_type ) ) {
+				return $data;
+			}
 
 			$image = @imagecreatetruecolor( $image_width, $image_height );
 
@@ -990,8 +980,11 @@ class Athemes_Starter_Sites_Importer {
 
 		// Abort if widgets.json response code is not successful.
 		if ( 200 != wp_remote_retrieve_response_code( $raw ) ) {
-			wp_send_json_error();
+			wp_send_json_error( esc_html__( 'Failed to load widget demo file.', 'athemes-starter-sites' ) );
 		}
+
+	 	// Clean widget settings.
+		$this->clean_widget_settings();
 
 		// Decode raw JSON string to associative array.
 		$data = json_decode( wp_remote_retrieve_body( $raw ) );
@@ -1075,8 +1068,11 @@ class Athemes_Starter_Sites_Importer {
 
 		// Abort if customizer.json response code is not successful.
 		if ( 200 != wp_remote_retrieve_response_code( $raw ) ) {
-			wp_send_json_error();
+			wp_send_json_error( esc_html__( 'Failed to load customizer demo file.', 'athemes-starter-sites' ) );
 		}
+
+		// Clean customizer settings.
+		$this->clean_customizer_settings();
 
 		// Decode raw JSON string to associative array.
 		$data = maybe_unserialize( wp_remote_retrieve_body( $raw ), true );
@@ -1089,9 +1085,7 @@ class Athemes_Starter_Sites_Importer {
 		$results = $customizer->import( $data );
 
 		if ( is_wp_error( $results ) ) {
-			$error_message = $results->get_error_message();
-
-			wp_send_json_error( $error_message );
+			wp_send_json_error( esc_html__( 'An error occurred while importing customizer.', 'athemes-starter-sites' ) );
 		}
 
 		/**

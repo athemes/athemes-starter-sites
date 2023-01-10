@@ -449,6 +449,13 @@
   }
 }
 
+.atss-import-content-select{
+
+  &.atss-hidden{
+    display: none;
+  }
+}
+
 .atss-import-checkboxes{
   display: flex;
   grid-gap: 15px;
@@ -698,6 +705,15 @@
   overflow-y: auto;
   border-radius: 4px;
   background-color: #E8EDF2;
+}
+
+.atss-import-error-response{
+  display: block;
+  font-size: 12px;
+  margin-top: 10px;
+  padding-top: 10px;
+  color: #8f99a3;
+  border-top: 1px solid #cdd9e4;
 }
 
 .atss-import-finish-title{

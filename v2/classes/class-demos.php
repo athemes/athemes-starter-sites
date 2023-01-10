@@ -316,14 +316,15 @@ class ATSS_Demos_Page {
 							<div class="atss-import-close-button"><i class="dashicons dashicons-no-alt"></i></div>
 						</div>
 						<div class="atss-import-content">
-							<div class="atss-import-content-block">
+							<# var isShowContentType = ( data.args.imported ) ? ' atss-hidden' : ''; #>
+							<div class="atss-import-content-block atss-import-content-select{{ isShowContentType }}">
 								<div class="atss-import-toggle atss-active">
 									<div class="atss-import-toggle-title atss-import-toggle-button">
 										<?php esc_html_e( 'Content Type', 'athemes-starter-sites' ); ?>
 										<i class="atss-import-toggle-icon dashicons dashicons-arrow-up-alt2"></i>
 									</div>
 									<div class="atss-import-toggle-content">
-										<div class="atss-import-image-select atss-import-content-select">
+										<div class="atss-import-image-select">
 											<label class="atss-import-image-select-item">
 												<input type="radio" name="content_type" value="entire-site" checked="checked" />
 												<figure>
@@ -351,7 +352,7 @@ class ATSS_Demos_Page {
 									<div class="atss-import-toggle-content">
 										<div class="atss-import-checkboxes">
 											<label>
-												<input type="checkbox" data-action="atss_import_contents" data-priority="40" data-log="<?php esc_html_e( 'Importing contents...', 'athemes-starter-sites' ); ?>" checked="checked" />
+												<input type="checkbox" data-action="atss_import_contents" class="atss-import-with-content-type" data-priority="40" data-log="<?php esc_html_e( 'Importing contents...', 'athemes-starter-sites' ); ?>" checked="checked" />
 												<span><i></i></span>
 												<?php esc_html_e( 'Content', 'athemes-starter-sites' ); ?>
 											</label>
@@ -369,7 +370,7 @@ class ATSS_Demos_Page {
 										<# if ( data.args.imported ) { #>
 											<div class="atss-import-checkboxes atss-import-clean-checkboxes">
 												<label>
-													<input type="checkbox" data-action="atss_import_clean" data-priority="10" data-log="<?php esc_html_e( 'Cleaning previous import data...', 'athemes-starter-sites' ); ?>" checked="checked" />
+													<input type="checkbox" data-action="atss_import_clean" class="atss-import-with-content-type" data-priority="10" data-log="<?php esc_html_e( 'Cleaning previous import data...', 'athemes-starter-sites' ); ?>" />
 													<span><i></i></span>
 													<?php esc_html_e( 'Clean Install', 'athemes-starter-sites' ); ?>
 												</label>
@@ -436,13 +437,13 @@ class ATSS_Demos_Page {
 							</div>
 							<div class="atss-import-content-block">
 								<div class="atss-import-content-block-title">
-									<?php esc_html_e( 'Subscribe and Imports', 'athemes-starter-sites' ); ?>
+									<?php esc_html_e( 'Subscribe and Import', 'athemes-starter-sites' ); ?>
 								</div>
 								<div class="atss-import-subscribe">
 									<div class="atss-import-subscribe-text"><?php esc_html_e( 'Subscribe to learn about new starter sites and features', 'athemes-starter-sites' ); ?></div>
 									<label>
 										<strong><?php esc_html_e( 'Email', 'athemes-starter-sites' ); ?></strong>
-										<input type="email" value="" class="atss-import-subscribe-field-email" />
+										<input type="email" value="<?php echo esc_attr( get_option( 'admin_email' ) ); ?>" class="atss-import-subscribe-field-email" />
 									</label>
 									<label>
 										<input type="checkbox" value="yes" class="atss-import-subscribe-field-count-me" checked="checked" />
@@ -505,7 +506,7 @@ class ATSS_Demos_Page {
 					<div class="atss-import-step atss-import-step-finish">
 						<div class="atss-import-finish-content">
 							<div class="atss-import-finish-title">
-								<?php esc_html_e( 'Congratulation!', 'athemes-starter-sites' ); ?>
+								<?php esc_html_e( 'Congratulations!', 'athemes-starter-sites' ); ?>
 							</div>
 							<?php esc_html_e( 'Your website is ready. Go ahead, customize the text, images and design to make it yours!', 'athemes-starter-sites' ); ?>
 							<div class="atss-import-finish-actions">

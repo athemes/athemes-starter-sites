@@ -94,7 +94,7 @@ if ( ! class_exists( 'Athemes_Starter_Sites' ) ) {
 					'import_failed'   => esc_html__( 'Something went wrong, contact support.', 'athemes-starter-sites' ),
 					'import_finished' => esc_html__( 'Finished!', 'athemes-starter-sites' ),
 					'invalid_email'   => esc_html__( 'Enter a valid email address!', 'athemes-starter-sites' ),
-					'tweet_text'      => esc_html__( sprintf( 'I just built my website in {0} with %s starter sites by @athemesdotcom. Can’t beleive how easy it is!', $theme->name ), 'athemes-starter-sites' ),
+					'tweet_text'      => esc_html__( sprintf( 'I just built my ecommerce website in {0} seconds with %s theme by @athemesdotcom. It was so easy!', $theme->name ), 'athemes-starter-sites' ),
 				),
 			) );
 
