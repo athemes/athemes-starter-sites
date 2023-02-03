@@ -229,6 +229,40 @@ function botiga_demos_list() {
 				),
 			),
 		),
+		'wine' => array(
+			'name'       => esc_html__( 'Wine', 'athemes-starter-sites' ),
+			'type'       => 'pro',
+			'categories' => array( 'ecommerce' ),
+			'builders'   => array(
+				'gutenberg',
+				'elementor',
+			),
+			'preview'    => 'https://demo.athemes.com/botiga-wine/',
+			'thumbnail'  => 'https://athemes.com/themes-demo-content/botiga/wine/thumb.png',
+			'plugins'    => array_merge(
+				$plugins,
+				array(
+					array(
+						'name'     => 'WPForms',
+						'slug'     => 'wpforms-lite',
+						'path'     => 'wpforms-lite/wpforms.php',
+						'required' => false
+					),
+				),
+			),
+			'import'         => array(
+				'gutenberg'    => array(
+					'content'    => 'https://athemes.com/themes-demo-content/botiga/wine/botiga-dc-wine.xml',
+					'widgets'    => 'https://athemes.com/themes-demo-content/botiga/wine/botiga-w-wine.wie',
+					'customizer' => 'https://athemes.com/themes-demo-content/botiga/wine/botiga-c-wine.dat'
+				),
+				'elementor'    => array(
+					'content'    => 'https://athemes.com/themes-demo-content/botiga/elementor/wine/botiga-dc-wine-el.xml',
+					'widgets'    => 'https://athemes.com/themes-demo-content/botiga/elementor/wine/botiga-w-wine-el.wie',
+					'customizer' => 'https://athemes.com/themes-demo-content/botiga/elementor/wine/botiga-c-wine-el.dat'
+				),
+			),
+		),
 	);
 
 	return $demos;
@@ -315,7 +349,7 @@ function botiga_setup_after_import( $demo_id ) {
 		$nav_menu_widget = get_option( 'widget_nav_menu' );
 		foreach ( $nav_menu_widget as $key => $widget ) {
 			if ( $key !== '_multiwidget' ) {
-				if ( ( ! empty( $nav_menu_widget[ $key ]['title'] ) && in_array( $nav_menu_widget[ $key ]['title'], array( 'Quick links', 'Quick Links' ) ) ) || ( empty( $nav_menu_widget[ $key ]['title'] ) && $demo_id === 'jewelry' ) ) {
+				if ( ( ! empty( $nav_menu_widget[ $key ]['title'] ) && in_array( $nav_menu_widget[ $key ]['title'], array( 'Quick links', 'Quick Links' ) ) ) || ( empty( $nav_menu_widget[ $key ]['title'] ) && $demo_id === 'jewelry' ) || ( empty( $nav_menu_widget[ $key ]['title'] ) && $demo_id === 'wine' ) ) {
 					$nav_menu_widget[ $key ]['nav_menu'] = $footer_menu_one->term_id;
 					update_option( 'widget_nav_menu', $nav_menu_widget );
 				}
