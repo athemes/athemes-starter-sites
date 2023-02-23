@@ -1,7 +1,7 @@
 === aThemes Starter Sites ===
 Tags: athemes, elementor, demos, import, sites
 Requires at least: 4.0
-Tested up to: 6.0
+Tested up to: 6.1.1
 Requires PHP: 5.4
 Stable tag: trunk
 Contributors: aThemes
@@ -68,7 +68,13 @@ Go to Plugins > Add New and search for aThemes Starter Sites. Install and activa
 
 == Changelog ==
 
-= 1.0.29 =
+= 1.0.32 =
+* New starter site added for Botiga Pro
+
+= 1.0.31 =
+* New starter site added for Sydney Pro
+
+= 1.0.30 =
 * New Botiga import workflow
 * New starter site added for Botiga Pro
 

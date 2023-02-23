@@ -129,7 +129,33 @@ function sydney_atss_demos_list() {
 				'widgets'    => 'https://athemes.com/themes-demo-content/sydney/photography/widgets.wie',
 				'customizer' => 'https://athemes.com/themes-demo-content/sydney/photography/customizer-pro.dat',
 			),
-		),		
+		),	
+		'crypto'   => array(
+			'name'       => esc_html__( 'Cryptocurrency', 'sydney' ),
+			'type'       => 'pro',
+			'categories' => array( 'business' ),
+			'builders'   => array(
+				'elementor',
+			),
+			'preview'    => 'https://demo.athemes.com/sp-crypto/',
+			'thumbnail'  => 'https://athemes.com/themes-demo-content/sydney/crypto/thumb.jpg',
+			'plugins'    => array_merge(
+				array(
+					array(
+						'name'     => 'WPForms',
+						'slug'     => 'wpforms-lite',
+						'path'     => 'wpforms-lite/wpforms.php',
+						'required' => false
+					)
+				),
+				$plugins
+			),
+			'import'     => array(
+				'content'    => 'https://athemes.com/themes-demo-content/sydney/crypto/content.xml',
+				'widgets'    => 'https://athemes.com/themes-demo-content/sydney/crypto/widgets.wie',
+				'customizer' => 'https://athemes.com/themes-demo-content/sydney/crypto/customizer.dat',
+			),
+		),
 		'construction'   => array(
 			'name'       => esc_html__( 'Construction', 'sydney' ),
 			'type'       => 'pro',
