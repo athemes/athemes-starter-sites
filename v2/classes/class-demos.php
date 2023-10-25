@@ -54,6 +54,8 @@ class ATSS_Demos_Page {
 		add_action( 'wp_ajax_atss_import_data', array( $this, 'import_data' ) );
 		add_action( 'wp_ajax_atss_html_import_data', array( $this, 'html_import_data' ) );
 		add_action( 'wp_ajax_atss_dismissed_handler', array( $this, 'ajax_dismissed_handler' ) );
+		
+		add_action('wp_ajax_save_atss_custom_data', array( $this, 'custom_import_data' ) );
 
 		add_action( 'atss_plugin_activation', array( $this, 'reset_notices' ) );
 		add_action( 'atss_plugin_deactivation', array( $this, 'reset_notices' ) );
@@ -108,6 +110,29 @@ class ATSS_Demos_Page {
     }
 
 	}
+	
+	public function custom_import_data() {
+		check_ajax_referer( 'nonce', 'nonce' );
+		
+		try {
+			$color_scheme = ( isset( $_POST['color_scheme'] ) ) ? array_map( 'sanitize_text_field', wp_unslash( $_POST['color_scheme'] ) ) : array();
+    		$logo 			= ( isset( $_POST['logo'] ) ) ? esc_url_raw( $_POST['logo'] ) : '';
+    		$favicon 		= ( isset( $_POST['favicon'] ) ) ? esc_url_raw( $_POST['favicon'] ) : '';
+
+			$custom_import_settings = array(
+				'color_scheme' 		=> $color_scheme,
+				'custom_logo' 		=> $logo,
+				'custom_favicon' 	=> $favicon,
+			);
+		
+			set_transient( 'atss_custom_import_settings', $custom_import_settings, HOUR_IN_SECONDS );			
+		
+			 wp_send_json_success(array('message' => 'Saved successfully', 'logo' => $favicon));
+		} catch( Exception $e ) {
+			wp_send_json_error(array('message' => 'Error: Invalid nonce'));	
+		}
+
+	}
 
 	/**
 	 * HTML Demos
@@ -133,6 +158,11 @@ class ATSS_Demos_Page {
 							$name    = ( ! empty( $demo['name'] ) ) ? $demo['name'] : '';
 							$type    = ( ! empty( $demo['type'] ) ) ? $demo['type'] : '';
 							$preview = ( ! empty( $demo['preview'] ) ) ? $demo['preview'] : '';
+							$color_scheme = ( ! empty( $demo['color_scheme'] ) ) ? $demo['color_scheme'] : '';
+							
+							if ( is_array( $color_scheme ) ) {
+								$color_scheme = implode( ',', $color_scheme );
+							}
 
 							// Categories.
 							$categories = '[]';
@@ -167,7 +197,7 @@ class ATSS_Demos_Page {
 								<?php if ( ! empty( $demo['builders'] ) && count( $demo['builders'] ) > 1 ) : ?>
 									<div class="atss-demo-quick-import">
 										<?php foreach ( $demo['builders'] as $builder ) : ?>
-											<a href="#" class="atss-import-open-button" data-demo-id="<?php echo esc_attr( $demo_id ); ?>" data-builder="<?php echo esc_attr( $builder ); ?>" data-quick="yes"><?php echo esc_html( ucfirst( $builder ) ); ?></a>
+											<a href="#" class="atss-import-open-button" data-color-scheme="<?php echo esc_attr( $color_scheme ); ?>" data-demo-id="<?php echo esc_attr( $demo_id ); ?>" data-builder="<?php echo esc_attr( $builder ); ?>" data-quick="yes"><?php echo esc_html( ucfirst( $builder ) ); ?></a>
 										<?php endforeach; ?>
 									</div>
 								<?php endif; ?>
@@ -198,7 +228,7 @@ class ATSS_Demos_Page {
 									</div>
 									<div class="atss-demo-actions">
 										<?php if ( $this->settings['has_pro'] || $demo['type'] === 'free' ) : ?>
-											<a href="#" class="atss-import-open-button button button-primary" data-demo-id="<?php echo esc_attr( $demo_id ); ?>"><?php esc_html_e( 'Import', 'athemes-starter-sites' ); ?></a>
+											<a href="#" class="atss-import-open-button button button-primary" data-color-scheme="<?php echo esc_attr( $color_scheme ); ?>"  data-demo-id="<?php echo esc_attr( $demo_id ); ?>"><?php esc_html_e( 'Import', 'athemes-starter-sites' ); ?></a>
 										<?php endif; ?>
 										<?php if ( ! $this->settings['has_pro'] && $demo['type'] === 'pro' ) : ?>
 											<a href="<?php echo esc_url( $this->settings['pro_link'] ); ?>" target="_blank" class="atss-demo-pro-link-button button button-primary"><?php echo esc_html( $this->settings['pro_label'] ); ?></a>
@@ -396,6 +426,86 @@ class ATSS_Demos_Page {
 						</div>
 					</div>
 
+					<# if ( data.args.colorScheme ) { #>
+
+						<# var colorScheme = data.args.colorScheme.split(','); #>
+						<div class="atss-import-step">
+							<div class="atss-import-title">
+								<?php esc_html_e( 'Customize your import', 'athemes-starter-sites' ); ?>
+								<div class="atss-import-close-button"><i class="dashicons dashicons-no-alt"></i></div>
+							</div>
+							<div class="atss-import-content">
+								<div class="atss-import-content-block">
+									<div class="atss-import-content-block-title">
+										<?php esc_html_e( 'Would you like to customize the colors of this starter site or upload a logo before importing?', 'athemes-starter-sites' ); ?>
+									</div>
+									<div class="atss-import-clean-description"><?php esc_html_e( 'You can always change these settings later.', 'athemes-starter-sites' ); ?></div>
+								</div>
+							</div>
+							<div class="atss-import-actions">
+								<# if ( window.atss_localize.settings.has_pro || data.type === 'free' ) { #>
+									<a href="#" class="atss-import-next-button atss-import-customize-button button button-secondary"><?php esc_html_e( 'Customize', 'athemes-starter-sites' ); ?></a>
+								<# } #>
+								<a href="#" class="atss-import-skip-button button button-primary"><?php esc_html_e( 'Continue without customizing', 'athemes-starter-sites' ); ?></a>
+								<# if ( ! window.atss_localize.settings.has_pro && data.type === 'pro' ) { #>
+									<a href="{{ window.atss_localize.settings.pro_link }}" target="_blank" class="atss-demo-pro-link-button button button-primary">{{ window.atss_localize.settings.pro_label }}</a>
+								<# } #>
+							</div>							
+						</div>
+						<div class="atss-import-step">
+							<input type="hidden" name="atss_color_scheme" value="" />
+							<div class="atss-import-title">
+								<?php esc_html_e( 'Customize your import', 'athemes-starter-sites' ); ?>
+								<div class="atss-import-close-button"><i class="dashicons dashicons-no-alt"></i></div>
+							</div>
+							<div class="atss-import-actions atss-import-customize-actions">
+								
+								<div class="atss-import-customize-fields">
+									<div class="atss-logo-upload">
+										<input type="hidden" class="atss-logo-upload-input" name="atss_logo_url" value="" />
+										<div class="atss-logo-upload-button atss-media-button"><?php esc_html_e( 'Upload Logo', 'athemes-starter-sites' ); ?></div>
+									</div>
+
+									<div class="atss-icon-upload">
+										<input type="hidden" class="atss-icon-upload-input" name="atss_icon_url" value="" />
+										<div class="atss-icon-upload-button atss-media-button"><?php esc_html_e( 'Upload Site Icon', 'athemes-starter-sites' ); ?></div>
+									</div>
+
+									<div class="atss-color-pickers">
+										<#
+										var colorOptions = [];
+
+										for (var i = 1; i <= 9; i++) {
+											colorOptions.push({
+												label: window.atss_localize.tooltips['global_color_' + i],
+												class: 'sydney-global-color-' + i,
+												value: colorScheme[i - 1]
+											});
+										}
+
+										#>
+										<# _.each(colorOptions, function(colorOption) { #>
+											<div class="atss-color-picker">
+												<span class="pickr-holder"></span>
+												<input class="atss-color-picker-input {{ colorOption.class }}" type="hidden" data-default="{{ colorOption.value }}" value="{{ colorOption.value }}">
+												<div class="atss-color-picker-tooltip">{{ colorOption.label }}</div>
+											</div>
+										<# }); #>
+									</div>
+								</div>
+
+								<div style="display:flex;gap:10px;">
+									<a href="#" class="atss-import-reset-button button button-secondary"><?php esc_html_e( 'Reset', 'athemes-starter-sites' ); ?></a>
+									<a href="#" class="atss-import-next-button atss-import-save-custom-data-button button button-primary"><?php esc_html_e( 'Next', 'athemes-starter-sites' ); ?></a>
+								</div>
+
+								<div class="atss-iframe-wrapper">
+									<iframe id="atss-demo-frame" src="{{ data.preview }}" height="100%"></iframe>
+								</div>								
+							</div>							
+						</div>
+					<# } #>		
+
 					<div class="atss-import-step">
 						<div class="atss-import-title">
 							<?php esc_html_e( 'Okay, just one last step...', 'athemes-starter-sites' ); ?>
@@ -499,7 +609,7 @@ class ATSS_Demos_Page {
 									<div class="atss-import-error-log"></div>
 								</div>
 							</div>
-							<a href="#" class="atss-import-open-button button button-primary" data-demo-id="{{ data.args.demoId }}"><?php esc_html_e( 'Click here and try again', 'athemes-starter-sites' ); ?></a>
+							<a href="#" class="atss-import-open-button button button-primary" data-color-scheme="{{ data.args.colorScheme }}" data-demo-id="{{ data.args.demoId }}"><?php esc_html_e( 'Click here and try again', 'athemes-starter-sites' ); ?></a>
 						</div>
 					</div>
 
@@ -528,6 +638,7 @@ class ATSS_Demos_Page {
 				</form>
 
 			</script>
+
 		<?php
 	}
 
@@ -544,6 +655,8 @@ class ATSS_Demos_Page {
 
 		$themes = array(
 			'Botiga',
+			'Sydney Pro',
+			'Sydney',
 		);
 
 		return in_array( $theme->name, $themes );

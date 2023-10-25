@@ -49,6 +49,11 @@ _dcs.account = 5598225;
       var nonce        = window.atss_localize.nonce;
       var demo_id      = $form.find('input[name="demo_id"]').val();
       var builder_type = $form.find('input[name="builder_type"]:checked').val();
+
+      if ( ! builder_type ) {
+        builder_type = 'elementor';
+      }
+
       var content_type = $form.find('input[name="content_type"]:checked').val();
 
       var data = $.extend( {
@@ -264,6 +269,7 @@ _dcs.account = 5598225;
         e.preventDefault();
 
         var demoId      = $(this).data('demo-id');
+        var colorScheme = $(this).data('color-scheme');
         var demoObj     = window.atss_localize.demos[ demoId ];
         var template    = wp.template('atss-import');
 
@@ -275,6 +281,7 @@ _dcs.account = 5598225;
           demoObj.args = {};
 
           demoObj.args.demoId   = demoId;
+          demoObj.args.colorScheme = colorScheme;
           demoObj.args.quick    = $(this).data('quick') || ( demoObj.builders.length < 2 ) || false;
           demoObj.args.builder  = $(this).data('builder') || demoObj.builders[0];
           demoObj.args.imported = window.atss_localize.imported || atssDoneOrFail;

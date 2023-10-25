@@ -14,7 +14,6 @@ _dcs.account = 5598225;
   var s = document.getElementsByTagName('script')[0];
   s.parentNode.insertBefore(dc, s);
 })();
-
 //
 // Demo Importer
 //
@@ -38,11 +37,20 @@ _dcs.account = 5598225;
       var demo_id = $form.find('input[name="demo_id"]').val();
       var builder_type = $form.find('input[name="builder_type"]:checked').val();
       var content_type = $form.find('input[name="content_type"]:checked').val();
+
+      var color_scheme = $form.find('input[name="atss_color_scheme"]').val();
+      var logo = $form.find('input[name="atss_logo_url"]').val();
+      var favicon = $form.find('input[name="atss_icon_url"]').val();
+      
+
       var data = $.extend({
         nonce: nonce,
         demo_id: demo_id,
         builder_type: builder_type,
-        content_type: content_type
+        content_type: content_type,
+        color_scheme: color_scheme,
+        logo: logo,
+        favicon: favicon
       }, steps[step]);
       delete data.log;
       delete data.priority;
@@ -169,6 +177,7 @@ _dcs.account = 5598225;
       $atss.on('click', '.atss-import-open-button', function (e) {
         e.preventDefault();
         var demoId = $(this).data('demo-id');
+        var colorScheme = $(this).data('color-scheme');
         var demoObj = window.atss_localize.demos[demoId];
         var template = wp.template('atss-import');
         if (demoObj && demoObj.builders.length) {
@@ -177,13 +186,133 @@ _dcs.account = 5598225;
           // create args object
           demoObj.args = {};
           demoObj.args.demoId = demoId;
+          demoObj.args.colorScheme = colorScheme;
           demoObj.args.quick = $(this).data('quick') || demoObj.builders.length < 2 || false;
           demoObj.args.builder = $(this).data('builder') || demoObj.builders[0];
           demoObj.args.imported = window.atss_localize.imported || atssDoneOrFail;
           $atss.find('.atss-import').html(template(demoObj));
           $body.addClass('atss-import-show');
         }
+ 
+        // send message to iframe
+          var sendPalette = function(paletteValues) {
+              var frame = document.getElementById('atss-demo-frame').contentWindow;
+     
+              var params = {
+                  command: 'changeColorPalette',
+                  palette: paletteValues,
+              };
+      
+              frame.postMessage(JSON.stringify(params), '*');
+          };
+  
+          // init color picker
+          var colorPickers = document.querySelectorAll('.atss-color-picker');
+          var paletteInputs = document.querySelectorAll('.atss-color-picker-input');
+          var paletteValues = [];
+      
+          paletteInputs.forEach(function(input, index) {
+              input.setAttribute('data-index', index);
+      
+              input.addEventListener('change', function() {
+                  var inputIndex = input.getAttribute('data-index');
+                  paletteValues[inputIndex] = input.value;
+                  sendPalette(paletteValues);
+              });
+          });
+      
+          colorPickers.forEach(function(wrapper) {
+              const pickr = Pickr.create({
+                  el: wrapper.querySelector('.pickr-holder'),
+                  theme: 'atss',
+                  default: wrapper.querySelector('.atss-color-picker-input').value,
+                  sliders: 'h',
+                  swatches: [],
+                  components: {
+                      preview: true,
+                      opacity: true,
+                      hue: true,
+                      interaction: {
+                          hex: true,
+                          rgba: true,
+                          input: true,
+                          clear: true,
+                          save: false
+                      }
+                  }
+              });
+      
+              pickr.on('change', function (color) {
+                  var colorCode;
+      
+                  if (color.a === 1) {
+                      pickr.setColorRepresentation('HEX');
+                      colorCode = color.toHEXA().toString(0);
+                  } else {
+                      pickr.setColorRepresentation('RGBA');
+                      colorCode = color.toRGBA().toString(0);
+                  }
+      
+                  var input = wrapper.querySelector('.atss-color-picker-input');
+                  input.value = colorCode;
+                  input.dispatchEvent(new Event('change'));
+      
+                  //get the button
+                  var button = wrapper.querySelector('.pcr-button');
+                  //set the background color
+                  button.style.backgroundColor = colorCode;
+              });
+
+              var resetButton = wrapper.parentElement.parentElement.parentElement.querySelector('.atss-import-reset-button');
+
+              resetButton.addEventListener('click', function() {
+                  pickr.setColor(wrapper.querySelector('.atss-color-picker-input').getAttribute('data-default'));
+              });
+
+          });        
       });
+
+      var sendLogo = function(logo) {
+        var frame = document.getElementById('atss-demo-frame').contentWindow;
+
+        var params = {
+            command: 'changeLogo',
+            logo: logo,
+        };
+
+        frame.postMessage(JSON.stringify(params), '*');
+    };
+
+      $atss.on('click', '.atss-media-button', function (e) {
+        e.preventDefault();
+        var mediaUploader;
+        
+        if (mediaUploader) {
+            mediaUploader.open();
+            return;
+        }
+
+        mediaUploader = wp.media({
+            frame: 'post',
+            state: 'insert',
+            multiple: false
+        });
+
+        mediaUploader.on('insert', function() {
+            var attachment = mediaUploader.state().get('selection').first().toJSON();
+            
+            //if has class atss-logo-upload-button
+            if ($(e.target).hasClass('atss-logo-upload-button')) {
+                $('.atss-logo-upload-input').val(attachment.url);
+                sendLogo(attachment.url);
+            } else {
+                $('.atss-icon-upload-input').val(attachment.url);
+            }
+        });
+
+        mediaUploader.open();
+      });
+
       $atss.on('click', '.atss-import-close-button', function (e) {
         e.preventDefault();
         $body.removeClass('atss-import-show');
@@ -198,12 +327,61 @@ _dcs.account = 5598225;
         $step.removeClass('atss-active');
         $step.prev().addClass('atss-active');
       });
-      $atss.on('click', '.atss-import-next-button', function (e) {
+$atss.on('click', '.atss-import-next-button', function (e) {
+  e.preventDefault();
+  var $step = $(this).closest('.atss-import-step');
+  $step.removeClass('atss-active');
+  $step.next().addClass('atss-active');
+
+  if ($(this).hasClass('atss-import-customize-button')) {
+    $atss.find('.atss-import-form').addClass('atss-import-form-customize');
+  } else {
+    $atss.find('.atss-import-form').removeClass('atss-import-form-customize');
+  }
+
+  var $form = $atss.find('.atss-import-form');
+
+if ($(this).hasClass('atss-import-save-custom-data-button')) {
+    e.preventDefault();
+    
+    var nonce = window.atss_localize.nonce;
+    var $colorPickerInputs = $form.find('.atss-color-picker-input');
+
+    var color_scheme = [];
+    $colorPickerInputs.each(function () {
+        color_scheme.push($(this).val());
+    });    
+	var logo = $form.find('input[name="atss_logo_url"]').val();
+    var favicon = $form.find('input[name="atss_icon_url"]').val();
+
+    $.ajax({
+        url: window.atss_localize.ajax_url,
+        data: {
+            action: 'save_atss_custom_data',
+            nonce: nonce,
+            color_scheme: color_scheme,
+            logo: logo,
+            favicon: favicon
+        },
+        method: 'POST', // POST method
+        success: function (response) {
+            console.log(response);
+        },
+        error: function (error) {
+            console.log(error);
+        }
+    });
+}
+});
+
+      $atss.on('click', '.atss-import-skip-button', function (e) {
         e.preventDefault();
         var $step = $(this).closest('.atss-import-step');
         $step.removeClass('atss-active');
-        $step.next().addClass('atss-active');
+        $step.next().next().addClass('atss-active');
+       
       });
+
       $atss.on('change', '.atss-import-builder-select input', function (e) {
         $atss.find('.atss-import-plugin-builder').addClass('atss-hidden');
         $atss.find('.atss-import-plugin-builder input').prop('checked', false);
@@ -270,4 +448,5 @@ _dcs.account = 5598225;
       });
     }
   });
+
 })(jQuery);

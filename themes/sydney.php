@@ -181,7 +181,33 @@ function sydney_atss_demos_list() {
 				'widgets'    => 'https://athemes.com/themes-demo-content/sydney/crypto/widgets.wie',
 				'customizer' => 'https://athemes.com/themes-demo-content/sydney/crypto/customizer.dat',
 			),
-		),		
+		),	
+		'news'   => array(
+			'name'       => esc_html__( 'News', 'sydney' ),
+			'type'       => 'pro',
+			'categories' => array( 'blog', 'magazine' ),
+			'builders'   => array(
+				'elementor',
+			),
+			'preview'    => 'https://demo.athemes.com/sp-news/',
+			'thumbnail'  => 'https://athemes.com/themes-demo-content/sydney/news/thumb.jpg',
+			'plugins'    => array_merge(
+				array(
+					array(
+						'name'     => 'WPForms',
+						'slug'     => 'wpforms-lite',
+						'path'     => 'wpforms-lite/wpforms.php',
+						'required' => false
+					)
+				),
+				$plugins
+			),
+			'import'     => array(
+				'content'    => 'https://athemes.com/themes-demo-content/sydney/news/content.xml',
+				'widgets'    => 'https://athemes.com/themes-demo-content/sydney/news/widgets.wie',
+				'customizer' => 'https://athemes.com/themes-demo-content/sydney/news/customizer.dat',
+			),
+		),			
 		'construction'   => array(
 			'name'       => esc_html__( 'Construction', 'sydney' ),
 			'type'       => 'pro',
@@ -512,8 +538,8 @@ function sydney_atss_setup_after_import() {
 	);
 
 	// Asign the static front page and the blog page.
-	$front_page = get_page_by_title( 'My front page' );
-	$blog_page  = get_page_by_title( 'My blog page' );
+	$front_page = atss_get_page_by_title( 'My front page' );
+	$blog_page  = atss_get_page_by_title( 'My blog page' );
 
 	update_option( 'show_on_front', 'page' );
 	update_option( 'page_on_front', $front_page->ID );

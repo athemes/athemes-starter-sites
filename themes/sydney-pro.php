@@ -156,6 +156,86 @@ function sydney_atss_demos_list() {
 				'customizer' => 'https://athemes.com/themes-demo-content/sydney/crypto/customizer.dat',
 			),
 		),
+		'saas'   => array(
+			'name'       => esc_html__( 'SaaS', 'sydney' ),
+			'type'       => 'pro',
+			'categories' => array( 'business' ),
+			'builders'   => array(
+				'elementor',
+			),
+			'preview'    => 'https://demo.athemes.com/sp-saas/',
+			'thumbnail'  => 'https://athemes.com/themes-demo-content/sydney/saas/thumb.jpg',
+			'plugins'    => array_merge(
+				array(
+					array(
+						'name'     => 'WPForms',
+						'slug'     => 'wpforms-lite',
+						'path'     => 'wpforms-lite/wpforms.php',
+						'required' => false
+					)
+				),
+				$plugins
+			),
+			'import'     => array(
+				'content'    => 'https://athemes.com/themes-demo-content/sydney/saas/content.xml',
+				'widgets'    => 'https://athemes.com/themes-demo-content/sydney/saas/widgets.wie',
+				'customizer' => 'https://athemes.com/themes-demo-content/sydney/saas/customizer.dat',
+			),
+		),
+		'charity'   => array(
+			'name'       => esc_html__( 'Charity', 'sydney' ),
+			'type'       => 'pro',
+			'categories' => array( 'business' ),
+			'builders'   => array(
+				'elementor',
+			),
+			'preview'    => 'https://demo.athemes.com/sp-charity/',
+			'thumbnail'  => 'https://athemes.com/themes-demo-content/sydney/charity/thumb.jpg',
+			'plugins'    => array_merge(
+				array(
+					array(
+						'name'     => 'WPForms',
+						'slug'     => 'wpforms-lite',
+						'path'     => 'wpforms-lite/wpforms.php',
+						'required' => false
+					)
+				),
+				$plugins
+			),
+			'import'     => array(
+				'content'    => 'https://athemes.com/themes-demo-content/sydney/charity/content.xml',
+				'widgets'    => 'https://athemes.com/themes-demo-content/sydney/charity/widgets.wie',
+				'customizer' => 'https://athemes.com/themes-demo-content/sydney/charity/customizer.dat',
+			),
+		),
+
+
+		'news'   => array(
+			'name'       => esc_html__( 'News (requires Elementor Containers)', 'sydney' ),
+			'type'       => 'pro',
+			'categories' => array( 'blog', 'magazine' ),
+			'builders'   => array(
+				'elementor',
+			),
+			'preview'    => 'https://demo.athemes.com/sp-news/',
+			'thumbnail'  => 'https://athemes.com/themes-demo-content/sydney/news/thumb.jpg',
+			'plugins'    => array_merge(
+				array(
+					array(
+						'name'     => 'WPForms',
+						'slug'     => 'wpforms-lite',
+						'path'     => 'wpforms-lite/wpforms.php',
+						'required' => false
+					)
+				),
+				$plugins
+			),
+			'import'     => array(
+				'content'    => 'https://athemes.com/themes-demo-content/sydney/news/content.xml',
+				'widgets'    => 'https://athemes.com/themes-demo-content/sydney/news/widgets.wie',
+				'customizer' => 'https://athemes.com/themes-demo-content/sydney/news/customizer.dat',
+			),
+		),
 		'construction'   => array(
 			'name'       => esc_html__( 'Construction', 'sydney' ),
 			'type'       => 'pro',
@@ -642,8 +722,8 @@ function sydney_atss_setup_after_import() {
 	);
 
 	// Asign the static front page and the blog page.
-	$front_page = get_page_by_title( 'My front page' ) != NULL ? get_page_by_title( 'My front page' ) : get_page_by_title( 'Home' );
-	$blog_page  = get_page_by_title( 'My blog page' ) != NULL ? get_page_by_title( 'My blog page' ) : get_page_by_title( 'Blog' );
+	$front_page = atss_get_page_by_title( 'My front page' ) != NULL ? atss_get_page_by_title( 'My front page' ) : atss_get_page_by_title( 'Home' );
+	$blog_page  = atss_get_page_by_title( 'My blog page' ) != NULL ? atss_get_page_by_title( 'My blog page' ) : atss_get_page_by_title( 'Blog' );
 
 	update_option( 'show_on_front', 'page' );
 	update_option( 'page_on_front', $front_page->ID );
@@ -660,7 +740,7 @@ function sydney_atss_setup_after_import() {
 	if( class_exists( 'Woocommerce' ) ) {
 		switch ( $demo_id ) {
 			case 'author':
-				$shop_page = get_page_by_title( 'Books' );
+				$shop_page = atss_get_page_by_title( 'Books' );
 				update_option( 'woocommerce_shop_page_id', $shop_page->ID );
 
 				break;
@@ -668,7 +748,7 @@ function sydney_atss_setup_after_import() {
 		}
 	}
 
-	//Enable modules for the pro blog demo
+	//Enable demo-specific modules
 	if ( 'blogpro' === $demo_id ) {
 		$all_modules = get_option( 'sydney-modules' );
 		$all_modules = ( is_array( $all_modules ) ) ? $all_modules : (array) $all_modules;
@@ -682,6 +762,11 @@ function sydney_atss_setup_after_import() {
 				'primary' => $main_menu->term_id,
 			)
 		);
+	} elseif ( 'news' === $demo_id ) {
+		$all_modules = get_option( 'sydney-modules' );
+		$all_modules = ( is_array( $all_modules ) ) ? $all_modules : (array) $all_modules;
+
+		update_option( 'sydney-modules', array_merge( $all_modules, array( 'ext-blog' => true, 'templates' => true, 'page-headers' => true ) ) );
 	}
 
 	atss_import_helper( 'sydney', $demo_id );

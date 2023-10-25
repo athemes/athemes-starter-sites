@@ -215,6 +215,10 @@ if ( ! class_exists( 'Athemes_Starter_Sites' ) ) {
 		 * @param string $page Current page.
 		 */
 		public function admin_enqueue_scripts( $page ) {
+			if( ! empty( $page ) && $page !== 'appearance_page_starter-sites' ) {
+				return;
+			}
+
 			wp_enqueue_script( 'select2', ATSS_URL . 'assets/js/select2.min.js', array( 'jquery' ), '1.0', true );
 
 			wp_enqueue_script( 'stylefire', ATSS_URL . 'assets/js/stylefire.min.js', array( 'jquery' ), '1.0', true );

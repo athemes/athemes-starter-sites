@@ -245,24 +245,24 @@ function botiga_setup_after_import() {
 	}
 
 	// Asign the static front page and the blog page.
-	$front_page = get_page_by_title( 'Home' );
-	$blog_page  = get_page_by_title( 'Blog' );
+	$front_page = atss_get_page_by_title( 'Home' );
+	$blog_page  = atss_get_page_by_title( 'Blog' );
 
 	update_option( 'show_on_front', 'page' );
 	update_option( 'page_on_front', $front_page->ID );
 	update_option( 'page_for_posts', $blog_page->ID );
 
 	// My wishlist page
-	$wishlist_page = get_page_by_title( 'My Wishlist' );
+	$wishlist_page = atss_get_page_by_title( 'My Wishlist' );
 	if( $wishlist_page ) {
 		update_option( 'botiga_wishlist_page_id', $wishlist_page->ID );
 	}
 
 	// Create/assign WooCommerce pages
-	$shop_page 		= 'single-product' === $demo_id ? get_page_by_title( 'Listing' ) : get_page_by_title( 'Shop' );
-	$cart_page 		= get_page_by_title( 'Cart' );
-	$checkout_page  = get_page_by_title( 'Checkout' );
-	$myaccount_page = get_page_by_title( 'My Account' );
+	$shop_page 		= 'single-product' === $demo_id ? atss_get_page_by_title( 'Listing' ) : atss_get_page_by_title( 'Shop' );
+	$cart_page 		= atss_get_page_by_title( 'Cart' );
+	$checkout_page  = atss_get_page_by_title( 'Checkout' );
+	$myaccount_page = atss_get_page_by_title( 'My Account' );
 
 	update_option( 'woocommerce_shop_page_id', $shop_page->ID );
 	update_option( 'woocommerce_cart_page_id', $cart_page->ID );

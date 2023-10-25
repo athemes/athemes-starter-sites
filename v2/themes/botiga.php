@@ -263,6 +263,74 @@ function botiga_demos_list() {
 				),
 			),
 		),
+		'plants' => array(
+			'name'       => esc_html__( 'Plants', 'athemes-starter-sites' ),
+			'type'       => 'pro',
+			'categories' => array( 'ecommerce' ),
+			'builders'   => array(
+				'gutenberg',
+				'elementor',
+			),
+			'preview'    => 'https://demo.athemes.com/botiga-plants/',
+			'thumbnail'  => 'https://athemes.com/themes-demo-content/botiga/plants/thumb.png',
+			'plugins'    => array_merge(
+				$plugins,
+				array(
+					array(
+						'name'     => 'WPForms',
+						'slug'     => 'wpforms-lite',
+						'path'     => 'wpforms-lite/wpforms.php',
+						'required' => false
+					),
+				),
+			),
+			'import'         => array(
+				'gutenberg'    => array(
+					'content'    => 'https://athemes.com/themes-demo-content/botiga/plants/botiga-dc-plants.xml',
+					'widgets'    => 'https://athemes.com/themes-demo-content/botiga/plants/botiga-w-plants.wie',
+					'customizer' => 'https://athemes.com/themes-demo-content/botiga/plants/botiga-c-plants.dat'
+				),
+				'elementor'    => array(
+					'content'    => 'https://athemes.com/themes-demo-content/botiga/elementor/plants/botiga-dc-plants-el.xml',
+					'widgets'    => 'https://athemes.com/themes-demo-content/botiga/elementor/plants/botiga-w-plants-el.wie',
+					'customizer' => 'https://athemes.com/themes-demo-content/botiga/elementor/plants/botiga-c-plants-el.dat'
+				),
+			),
+		),
+		'shoes' => array(
+			'name'       => esc_html__( 'Shoes', 'athemes-starter-sites' ),
+			'type'       => 'pro',
+			'categories' => array( 'ecommerce' ),
+			'builders'   => array(
+				'gutenberg',
+				'elementor',
+			),
+			'preview'    => 'https://demo.athemes.com/botiga-shoes/',
+			'thumbnail'  => 'https://athemes.com/themes-demo-content/botiga/shoes/thumb.png',
+			'plugins'    => array_merge(
+				$plugins,
+				array(
+					array(
+						'name'     => 'WPForms',
+						'slug'     => 'wpforms-lite',
+						'path'     => 'wpforms-lite/wpforms.php',
+						'required' => false
+					),
+				),
+			),
+			'import'         => array(
+				'gutenberg'    => array(
+					'content'    => 'https://athemes.com/themes-demo-content/botiga/shoes/botiga-dc-shoes.xml',
+					'widgets'    => 'https://athemes.com/themes-demo-content/botiga/shoes/botiga-w-shoes.wie',
+					'customizer' => 'https://athemes.com/themes-demo-content/botiga/shoes/botiga-c-shoes.dat'
+				),
+				'elementor'    => array(
+					'content'    => 'https://athemes.com/themes-demo-content/botiga/elementor/shoes/botiga-dc-shoes-el.xml',
+					'widgets'    => 'https://athemes.com/themes-demo-content/botiga/elementor/shoes/botiga-w-shoes-el.wie',
+					'customizer' => 'https://athemes.com/themes-demo-content/botiga/elementor/shoes/botiga-c-shoes-el.dat'
+				),
+			),
+		),
 	);
 
 	return $demos;
@@ -331,7 +399,7 @@ function botiga_setup_after_import( $demo_id ) {
 	if ( $demo_id === 'jewelry' ) {
 
 		// Set modules.
-	  $modules = get_option( 'botiga-modules', array() );
+	  	$modules = get_option( 'botiga-modules', array() );
 		update_option( 'botiga-modules', array_merge( $modules, array( 'hf-builder' => true, 'mega-menu' => true ) ) );
 
 		// Update custom CSS file with mega menu css
@@ -341,6 +409,28 @@ function botiga_setup_after_import( $demo_id ) {
 			$mega_menu->update_custom_css_file();
 		}
 
+	}
+
+	// Plants Demo Extras
+	if( $demo_id === 'plants' ) {
+		// Set modules.
+		$modules = get_option( 'botiga-modules', array() );
+		update_option( 'botiga-modules', array_merge( $modules, array( 'wishlist' => true, 'advanced-reviews' => true ) ) );
+	}
+
+	// Shoes Demo Extras
+	if( $demo_id === 'shoes' ) {
+		// Set modules.
+		$modules = get_option( 'botiga-modules', array() );
+		update_option( 'botiga-modules', array_merge( $modules, array( 
+			'hf-builder' 	   			=> true, 
+			'wishlist' 		   			=> true, 
+			'advanced-reviews' 			=> true, 
+			'size-chart' 	   			=> true, 
+			'product-swatches' 			=> true,
+			'add-to-cart-notifications' => true,
+			'quick-links'               => true
+		) ) );
 	}
 
 	// "Footer" menu (menu name from import)
@@ -375,43 +465,43 @@ function botiga_setup_after_import( $demo_id ) {
 	update_option( 'show_on_front', 'page' );
 
 	// Asign the front page.
-	$front_page = get_page_by_title( 'Home' );
+	$front_page = ATSS_Core_Helpers::atss_get_page_by_title( 'Home' );
 	if ( ! empty( $front_page ) ) {
 		update_option( 'page_on_front', $front_page->ID );
 	}
 
 	// Asign the blog page.
-	$blog_page  = get_page_by_title( 'Blog' );
+	$blog_page  = ATSS_Core_Helpers::atss_get_page_by_title( 'Blog' );
 	if ( ! empty( $blog_page ) ) {
 		update_option( 'page_for_posts', $blog_page->ID );
 	}
 
 	// My wishlist page
-	$wishlist_page = get_page_by_title( 'My Wishlist' );
+	$wishlist_page = ATSS_Core_Helpers::atss_get_page_by_title( 'My Wishlist' );
 	if ( ! empty( $wishlist_page ) ) {
 		update_option( 'botiga_wishlist_page_id', $wishlist_page->ID );
 	}
 
 	// Asign the shop page.
-	$shop_page = ( 'single-product' === $demo_id ) ? get_page_by_title( 'Listing' ) : get_page_by_title( 'Shop' );
+	$shop_page = ( 'single-product' === $demo_id ) ? ATSS_Core_Helpers::atss_get_page_by_title( 'Listing' ) : ATSS_Core_Helpers::atss_get_page_by_title( 'Shop' );
 	if ( ! empty( $shop_page ) ) {
 		update_option( 'woocommerce_shop_page_id', $shop_page->ID );
 	}
 
 	// Asign the cart page.
-	$cart_page = get_page_by_title( 'Cart' );
+	$cart_page = ATSS_Core_Helpers::atss_get_page_by_title( 'Cart' );
 	if ( ! empty( $cart_page ) ) {
 		update_option( 'woocommerce_cart_page_id', $cart_page->ID );
 	}
 
 	// Asign the checkout page.
-	$checkout_page  = get_page_by_title( 'Checkout' );
+	$checkout_page  = ATSS_Core_Helpers::atss_get_page_by_title( 'Checkout' );
 	if ( ! empty( $checkout_page ) ) {
 		update_option( 'woocommerce_checkout_page_id', $checkout_page->ID );
 	}
 
 	// Asign the myaccount page.
-	$myaccount_page = get_page_by_title( 'My Account' );
+	$myaccount_page = ATSS_Core_Helpers::atss_get_page_by_title( 'My Account' );
 	if ( ! empty( $myaccount_page ) ) {
 		update_option( 'woocommerce_myaccount_page_id', $myaccount_page->ID );
 	}

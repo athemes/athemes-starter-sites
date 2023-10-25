@@ -61,3 +61,35 @@ function atss_import_helper( $theme, $demo_id ) {
 	);
 	update_option( 'atts_current_starter', $demo_id );
 }
+
+/**
+ * Get page by title
+ * The core WordPress function 'get_page_by_title' were deprecated since 6.2.0
+ * More info: https://make.wordpress.org/core/2023/03/06/get_page_by_title-deprecated/
+ * 
+ * @param string $page_title The title of the page.
+ */
+function atss_get_page_by_title( $page_title ) {
+	$query = new WP_Query(
+		array(
+			'post_type'              => 'page',
+			'title'                  => $page_title,
+			'post_status'            => 'all',
+			'posts_per_page'         => 1,
+			'no_found_rows'          => true,
+			'ignore_sticky_posts'    => true,
+			'update_post_term_cache' => false,
+			'update_post_meta_cache' => false,
+			'orderby'                => 'post_date ID',
+			'order'                  => 'ASC',
+		)
+	);
+	 
+	if ( ! empty( $query->post ) ) {
+		$page_got_by_title = $query->post;
+	} else {
+		$page_got_by_title = null;
+	}
+
+	return $page_got_by_title;
+}

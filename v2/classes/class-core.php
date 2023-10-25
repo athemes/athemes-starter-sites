@@ -36,11 +36,11 @@ if ( ! class_exists( 'Athemes_Starter_Sites' ) ) {
 			require_once ATSS_PATH . 'v2/classes/class-widget-importer.php';
 			require_once ATSS_PATH . 'v2/classes/class-customizer-importer.php';
 			require_once ATSS_PATH . 'v2/classes/class-importer.php';
+			require_once ATSS_PATH . 'v2/classes/class-core-helpers.php';
 
 			// Actions.
 			add_action( 'plugins_loaded', array( $this, 'theme_configs' ) );
 			add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ), 15 );
-
 		}
 
 		/**
@@ -55,6 +55,10 @@ if ( ! class_exists( 'Athemes_Starter_Sites' ) ) {
 				require_once ATSS_PATH . 'v2/themes/botiga.php';
 			}
 
+			if ( 'Sydney Pro' === $theme->name || 'Sydney Pro' === $parent->name || 'Sydney' === $theme->name || 'Sydney' === $parent->name ) {
+				require_once ATSS_PATH . 'v2/themes/sydney.php';
+			}
+
 		}
 
 		/**
@@ -62,7 +66,10 @@ if ( ! class_exists( 'Athemes_Starter_Sites' ) ) {
 		 *
 		 * @param string $page Current page.
 		 */
-		public function admin_enqueue_scripts( $hook ) {
+		public function admin_enqueue_scripts( $page ) {
+			if( ! empty( $page ) && $page !== 'appearance_page_botiga-dashboard' && $page !== 'toplevel_page_botiga-dashboard' && $page !== 'appearance_page_sydney-dashboard' ) {
+				return;
+			}
 
 			// Demos.
 			$demos = apply_filters( 'atss_register_demos_list', array() );
@@ -76,9 +83,16 @@ if ( ! class_exists( 'Athemes_Starter_Sites' ) ) {
 			// Settings.
 			$settings = apply_filters( 'atss_register_demos_settings', array() );
 
+			// Tooltips.
+			$tooltips = apply_filters( 'atss_register_customize_tooltips', array() );
+
 			// Theme.
 			$theme = wp_get_theme();
 			$theme = ( get_template_directory() !== get_stylesheet_directory() && $theme->parent() ) ? $theme->parent() : $theme;
+
+			wp_enqueue_script( 'athemes-starter-sites-pickr', ATSS_URL . 'v2/assets/js/pickr.min.js', array(), '1.0.0', true );
+
+			wp_enqueue_media();
 
 			wp_enqueue_script( 'athemes-starter-sites-v2', ATSS_URL . 'v2/assets/js/script.min.js', array( 'jquery', 'wp-util', 'underscore' ), '2.0.0', true );
 
@@ -90,11 +104,12 @@ if ( ! class_exists( 'Athemes_Starter_Sites' ) ) {
 				'theme_name'        => $theme->name,
 				'imported'          => get_option( 'atss_current_starter', '' ),
 				'settings'          => $settings,
+				'tooltips'			=> $tooltips,
 				'i18n'              => array(
 					'import_failed'   => esc_html__( 'Something went wrong, contact support.', 'athemes-starter-sites' ),
 					'import_finished' => esc_html__( 'Finished!', 'athemes-starter-sites' ),
 					'invalid_email'   => esc_html__( 'Enter a valid email address!', 'athemes-starter-sites' ),
-					'tweet_text'      => esc_html__( sprintf( 'I just built my ecommerce website in {0} seconds with %s theme by @athemesdotcom. It was so easy!', $theme->name ), 'athemes-starter-sites' ),
+					'tweet_text'      => esc_html__( sprintf( 'I just built my website in {0} seconds with the %s theme by @athemesdotcom. It was so easy!', $theme->name ), 'athemes-starter-sites' ),
 				),
 			) );
 

@@ -245,7 +245,7 @@ class Athemes_Starter_Sites_Importer {
 		/**
 		 * Action hook.
 		 */
-		do_action( 'atss_import_start' );
+		do_action( 'atss_import_start', $demo_id );
 
 		/**
 		 * Return successful AJAX.
@@ -1110,9 +1110,9 @@ class Athemes_Starter_Sites_Importer {
 		/**
 		 * Get Demo ID.
 		 */
-		$demo_id      = ( isset( $_POST['demo_id'] ) ) ? sanitize_text_field( wp_unslash( $_POST['demo_id'] ) ) : '';
-		$builder_type = ( isset( $_POST['builder_type'] ) ) ? sanitize_text_field( wp_unslash( $_POST['builder_type'] ) ) : '';
-		$content_type = ( isset( $_POST['content_type'] ) ) ? sanitize_text_field( wp_unslash( $_POST['content_type'] ) ) : '';
+		$demo_id      	= ( isset( $_POST['demo_id'] ) ) ? sanitize_text_field( wp_unslash( $_POST['demo_id'] ) ) : '';
+		$builder_type 	= ( isset( $_POST['builder_type'] ) ) ? sanitize_text_field( wp_unslash( $_POST['builder_type'] ) ) : '';
+		$content_type 	= ( isset( $_POST['content_type'] ) ) ? sanitize_text_field( wp_unslash( $_POST['content_type'] ) ) : '';
 
 		if ( ! $demo_id || ! isset( $this->demos[ $demo_id ] ) ) {
 			wp_send_json_error( esc_html__( 'Invalid demo id.', 'athemes-starter-sites' ) );
@@ -1183,7 +1183,7 @@ class Athemes_Starter_Sites_Importer {
 		/**
 		 * Action hook.
 		 */
-		do_action( 'atss_finish_import', $demo_id );
+		do_action( 'atss_finish_import', $demo_id, $custom_import_settings );
 
 		/**
 		 * Return successful AJAX.

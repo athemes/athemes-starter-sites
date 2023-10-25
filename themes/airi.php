@@ -397,8 +397,8 @@ function airi_setup_after_import() {
 	}
 
 	// Asign the static front page and the blog page.
-	$front_page = get_page_by_title( 'Home' );
-	$blog_page  = get_page_by_title( 'Blog' );
+	$front_page = atss_get_page_by_title( 'Home' );
+	$blog_page  = atss_get_page_by_title( 'Blog' );
 
 	update_option( 'show_on_front', 'page' );
 	update_option( 'page_on_front', $front_page->ID );

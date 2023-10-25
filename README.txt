@@ -1,7 +1,7 @@
 === aThemes Starter Sites ===
 Tags: athemes, elementor, demos, import, sites
 Requires at least: 4.0
-Tested up to: 6.1.1
+Tested up to: 6.2.0
 Requires PHP: 5.4
 Stable tag: trunk
 Contributors: aThemes
@@ -67,6 +67,30 @@ Yes, of course! We are working on many more free and pro starter demos.
 Go to Plugins > Add New and search for aThemes Starter Sites. Install and activate it.
 
 == Changelog ==
+
+= 1.0.40 =
+* Elementor containers notice
+
+= 1.0.39 =
+* New starter site added for Sydney Pro
+
+= 1.0.37 =
+* Fixes for Sydney import process
+* New starter site added for Botiga Pro
+
+= 1.0.36 =
+* Sydney and Sydney Pro added to v2
+* Two new starter sites for Sydney Pro
+
+= 1.0.35 =
+* Deprecated 'get_page_by_title' function replaced.
+* Fixed scripts being loaded on unecessary admin pages.
+
+= 1.0.34 =
+* New starter site added for Sydney Pro
+
+= 1.0.33 =
+* New starter site added for Botiga Pro
 
 = 1.0.32 =
 * New starter site added for Botiga Pro

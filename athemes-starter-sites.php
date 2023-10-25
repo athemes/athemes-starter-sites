@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       aThemes Starter Sites
  * Description:       Starter Sites for Sydney, Botiga and Airi
- * Version:           1.0.32
+ * Version:           1.0.44
  * Author:            aThemes
  * Author URI:        https://athemes.com
  * License:           GPL-2.0+
@@ -32,9 +32,11 @@ $theme = wp_get_theme();
 $theme = ( get_template_directory() !== get_stylesheet_directory() && $theme->parent() ) ? $theme->parent() : $theme;
 
 /**
- * Boot version 2, If theme is "Botiga" and version >= 1.2.3+
+ * Boot version 2 if applicable.
  */
-if ( $theme->name === 'Botiga' && version_compare( $theme->version, '1.2.3', '>=' ) ) {
+if ( $theme->name === 'Botiga' && version_compare( $theme->version, '1.2.3', '>=' )
+  || $theme->name === 'Sydney Pro' && version_compare( $theme->version, '4.0.0', '>=' )
+  || $theme->name === 'Sydney' && version_compare( $theme->version, '2.22', '>=' ) ) {
   require_once ATSS_PATH . '/v2/classes/class-core.php';
 } else {
   require_once ATSS_PATH . '/core/class-core.php';
