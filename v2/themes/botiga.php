@@ -18,6 +18,13 @@ function botiga_demos_list() {
 		'required' => true
 	);
 
+	$plugins[] = array(
+		'name'     => 'Merchant',
+		'slug'     => 'merchant',
+		'path'     => 'merchant/merchant.php',
+		'required' => false
+	);
+
 	$demos = array(
 		'beauty'      => array(
 			'name'       => esc_html__( 'Beauty', 'botiga' ),
@@ -331,6 +338,40 @@ function botiga_demos_list() {
 				),
 			),
 		),
+		'books' => array(
+			'name'       => esc_html__( 'Books', 'athemes-starter-sites' ),
+			'type'       => 'pro',
+			'categories' => array( 'ecommerce' ),
+			'builders'   => array(
+				'gutenberg',
+				'elementor',
+			),
+			'preview'    => 'https://demo.athemes.com/botiga-books/',
+			'thumbnail'  => 'https://athemes.com/themes-demo-content/botiga/books/thumb.png',
+			'plugins'    => array_merge(
+				$plugins,
+				array(
+					array(
+						'name'     => 'WPForms',
+						'slug'     => 'wpforms-lite',
+						'path'     => 'wpforms-lite/wpforms.php',
+						'required' => false
+					),
+				),
+			),
+			'import'         => array(
+				'gutenberg'    => array(
+					'content'    => 'https://athemes.com/themes-demo-content/botiga/books/botiga-dc-books.xml',
+					'widgets'    => 'https://athemes.com/themes-demo-content/botiga/books/botiga-w-books.wie',
+					'customizer' => 'https://athemes.com/themes-demo-content/botiga/books/botiga-c-books.dat'
+				),
+				'elementor'    => array(
+					'content'    => 'https://athemes.com/themes-demo-content/botiga/elementor/books/botiga-dc-books-el.xml',
+					'widgets'    => 'https://athemes.com/themes-demo-content/botiga/elementor/books/botiga-w-books-el.wie',
+					'customizer' => 'https://athemes.com/themes-demo-content/botiga/elementor/books/botiga-c-books-el.dat'
+				),
+			),
+		),
 	);
 
 	return $demos;
@@ -342,6 +383,17 @@ add_filter( 'atss_register_demos_list', 'botiga_demos_list' );
  * Define actions that happen after import
  */
 function botiga_setup_after_import( $demo_id ) {
+
+	// Enable Merchant modules.
+	if ( class_exists( 'Merchant' ) ) {
+		$modules = get_option( 'merchant-modules', array() );
+		
+		update_option( 'merchant-modules', array_merge( $modules, array( 
+			'inactive-tab-message'    => true,
+			'agree-to-terms-checkbox' => true,
+			'payment-logos'           => true,
+		) ) );
+	}
 
 	// Assign the menu.
 	$main_menu = get_term_by( 'name', 'Main', 'nav_menu' );
@@ -430,6 +482,16 @@ function botiga_setup_after_import( $demo_id ) {
 			'product-swatches' 			=> true,
 			'add-to-cart-notifications' => true,
 			'quick-links'               => true
+		) ) );
+	}
+
+	// Books Demo Extras
+	if( $demo_id === 'books' ) {
+		// Set modules.
+		$modules = get_option( 'botiga-modules', array() );
+		update_option( 'botiga-modules', array_merge( $modules, array( 
+			'advanced-reviews' 			=> true,
+			 'buy-now' 					=> true,
 		) ) );
 	}
 

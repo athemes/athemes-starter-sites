@@ -65,6 +65,7 @@ class ATSS_WXRImporter extends WP_Importer {
 
 	protected $url_remap = array();
 	protected $featured_images = array();
+	protected static $attachments_url_replacement_map = array();
 
 	/**
 	 * Logger instance.
@@ -500,6 +501,8 @@ class ATSS_WXRImporter extends WP_Importer {
 		if ( $this->options['aggressive_url_search'] ) {
 			$this->replace_attachment_urls_in_content();
 		}
+
+		$this->replace_attachment_urls_in_content2();
 
 		$this->remap_featured_images();
 
@@ -1103,6 +1106,8 @@ class ATSS_WXRImporter extends WP_Importer {
 
 		$upload = $this->fetch_remote_file( $remote_url, $post );
 		if ( is_wp_error( $upload ) ) {
+			// var_dump('error', $upload);
+			// die();
 			return $upload;
 		}
 
@@ -1123,6 +1128,45 @@ class ATSS_WXRImporter extends WP_Importer {
 		do_action( 'atss_importer.processed.attachment', $upload );
 
 		// as per wp-admin/includes/upload.php
+
+		// check if file exists before inserting
+
+// 		if ( $remote_url === 'https://demo.athemes.com/botiga-shoes/wp-content/uploads/sites/155/2023/05/home-hero-scaled.jpg' ) {
+// 			// var_dump($meta);
+// 			// die();
+// // var_dump( $post, $meta, $remote_url );
+// //die();
+// 			$existing_files = get_posts(
+// 				array(
+// 					'post_type'      => 'attachment',
+// 					'post_status'    => 'any',
+// 					'posts_per_page' => -1,
+// 					'meta_key'       => $meta['key'],
+// 					'meta_value'     => $meta['value'],
+// 				)
+// 			);
+
+// 			foreach( $existing_files as $existing_file ) {
+// 				$title         = $existing_file->post_title;
+// 				$modified_date = $existing_file->post_modified;
+
+// 				if ( $title === $post[ 'post_title' ] && $modified_date === $post[ 'post_date' ]) {
+// 					wp_delete_post( $existing_file->ID, true );
+// 				}
+// 			}
+// 			// die();
+
+// 		}
+
+		$remote_url_new = basename( $remote_url );
+		$upload_url     = basename( $upload['url'] );
+
+		// var_dump( $remote_url_new, $upload['url'] );
+		// die();
+		if ( $remote_url_new !== $upload_url ) {
+			self::$attachments_url_replacement_map[ $remote_url_new ] = basename( $upload['url'] );
+		}
+
 		$post_id = wp_insert_attachment( $post, $upload['file'] );
 		if ( is_wp_error( $post_id ) ) {
 			return $post_id;
@@ -1138,6 +1182,11 @@ class ATSS_WXRImporter extends WP_Importer {
 		if ( substr( $remote_url, 0, 8 ) === 'https://' ) {
 			$insecure_url = 'http' . substr( $remote_url, 5 );
 			$this->url_remap[ $insecure_url ] = $upload['url'];
+		}
+
+		if ( $remote_url === 'https://demo.athemes.com/botiga-shoes/wp-content/uploads/sites/155/2023/05/home-hero-scaled.jpg' ) {
+			// var_dump( $upload, $this->url_remap );
+			// die();
 		}
 
 		if ( $this->options['aggressive_url_search'] ) {
@@ -2346,6 +2395,21 @@ class ATSS_WXRImporter extends WP_Importer {
 	}
 
 	/**
+	 * Use stored mapping information to update old attachment URLs
+	 */
+	protected function replace_attachment_urls_in_content2() {
+		global $wpdb;
+	var_dump(self::$attachments_url_replacement_map);
+	var_dump( $this->url_remap );
+	die();
+		foreach ( self::$attachments_url_replacement_map as $from_url => $to_url ) {
+			// remap urls in post_content
+			$query = $wpdb->prepare( "UPDATE {$wpdb->posts} SET post_content = REPLACE(post_content, %s, %s)", $from_url, $to_url );
+			$wpdb->query( $query );
+		}
+	}
+
+	/**
 	 * Update _thumbnail_id meta to new, imported attachment IDs
 	 */
 	function remap_featured_images() {
@@ -2440,6 +2504,7 @@ class ATSS_WXRImporter extends WP_Importer {
 	 * @return int|bool Existing post ID if it exists, false otherwise.
 	 */
 	protected function post_exists( $data ) {
+		return false;
 		// Constant-time lookup if we prefilled
 		$exists_key = $data['guid'];
 

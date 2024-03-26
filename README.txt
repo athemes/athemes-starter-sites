@@ -1,7 +1,7 @@
 === aThemes Starter Sites ===
 Tags: athemes, elementor, demos, import, sites
 Requires at least: 4.0
-Tested up to: 6.2.0
+Tested up to: 6.4.0
 Requires PHP: 5.4
 Stable tag: trunk
 Contributors: aThemes
@@ -67,6 +67,12 @@ Yes, of course! We are working on many more free and pro starter demos.
 Go to Plugins > Add New and search for aThemes Starter Sites. Install and activate it.
 
 == Changelog ==
+
+= 1.0.48 =
+* Added Merchant plugin to Botiga starters
+
+= 1.0.45 =
+* New starter site added for Botiga Pro
 
 = 1.0.40 =
 * Elementor containers notice

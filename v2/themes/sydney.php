@@ -25,8 +25,6 @@ if ( !function_exists( 'sydney_atss_demos_list') ) {
 			);
 		}
 
-
-
 		$demos = array(
 			'main-pro' => array(
 				'name'       => esc_html__( 'Agency', 'sydney' ),
@@ -48,6 +46,7 @@ if ( !function_exists( 'sydney_atss_demos_list') ) {
 					),
 					$plugins
 				),
+				'color_scheme' => array( '#1D3F3A', '#56716C', '#102226', '#102226', '#737C8C', '#00102E', '#EFF9F5', '#dbdbdb', '#ffffff' ),
 				'import'     => array(
 					'elementor'    => array(
 						'content'    => 'https://athemes.com/themes-demo-content/sydney/main-pro/content.xml',
@@ -102,9 +101,16 @@ if ( !function_exists( 'sydney_atss_demos_list') ) {
 							'path'     => 'woocommerce/woocommerce.php',
 							'required' => true,
 						),
+						array(
+							'name'     => 'Merchant',
+							'slug'     => 'merchant',
+							'path'     => 'merchant/merchant.php',
+							'required' => false,
+						),
 					),
 					$plugins
 				),
+				'color_scheme' => array( '#ab000d', '#6C0008', '#00102E', '#00102E', '#737C8C', '#EDEDED', '#F7F7F7', '#dbdbdb', '#ffffff' ),
 				'import'     => array(
 					'elementor'    => array(
 						'content'    => 'https://athemes.com/themes-demo-content/sydney/fashion/content.xml',
@@ -253,8 +259,62 @@ if ( !function_exists( 'sydney_atss_demos_list') ) {
 					),
 				),
 			),
-
-
+			'hotel'   => array(
+				'name'       => esc_html__( 'Hotel', 'sydney' ),
+				'type'       => 'pro',
+				'categories' => array( 'business' ),
+				'builders'   => array(
+					'elementor',
+				),
+				'preview'    => 'https://demo.athemes.com/sp-hotel/',
+				'thumbnail'  => 'https://athemes.com/themes-demo-content/sydney/hotel/thumb.jpg',
+				'plugins'    => array_merge(
+					array(
+						array(
+							'name'     => 'WPForms',
+							'slug'     => 'wpforms-lite',
+							'path'     => 'wpforms-lite/wpforms.php',
+							'required' => false
+						)
+					),
+					$plugins
+				),
+				'import'     => array(
+					'elementor'    => array( 
+						'content'    => 'https://athemes.com/themes-demo-content/sydney/hotel/content.xml',
+						'widgets'    => 'https://athemes.com/themes-demo-content/sydney/hotel/widgets.wie',
+						'customizer' => 'https://athemes.com/themes-demo-content/sydney/hotel/customizer.dat',
+					),
+				),
+			),
+			'wedding-planner'   => array(
+				'name'       => esc_html__( 'Wedding Planner', 'sydney' ),
+				'type'       => 'pro',
+				'categories' => array( 'business' ),
+				'builders'   => array(
+					'elementor',
+				),
+				'preview'    => 'https://demo.athemes.com/sp-wedding-planner/',
+				'thumbnail'  => 'https://athemes.com/themes-demo-content/sydney/wedding-planner/thumb.jpg',
+				'plugins'    => array_merge(
+					array(
+						array(
+							'name'     => 'WPForms',
+							'slug'     => 'wpforms-lite',
+							'path'     => 'wpforms-lite/wpforms.php',
+							'required' => false
+						)
+					),
+					$plugins
+				),
+				'import'     => array(
+					'elementor'    => array( 
+						'content'    => 'https://athemes.com/themes-demo-content/sydney/wedding-planner/content.xml',
+						'widgets'    => 'https://athemes.com/themes-demo-content/sydney/wedding-planner/widgets.wie',
+						'customizer' => 'https://athemes.com/themes-demo-content/sydney/wedding-planner/customizer.dat',
+					),
+				),
+			),
 			'news'   => array(
 				'name'       => esc_html__( 'News (requires Elementor Containers)', 'sydney' ),
 				'type'       => 'pro',
@@ -679,24 +739,13 @@ if ( !function_exists( 'sydney_atss_demos_list') ) {
 				'builders'   => array(
 					'elementor',
 				),
-				'preview'    => 'https://demo.athemes.com/sp-coworking/',
-				'thumbnail'  => 'https://athemes.com/themes-demo-content/sydney/coworking/thumb.jpg',
-				'plugins'    => array_merge(
-					array(
-						array(
-							'name'     => 'WPForms',
-							'slug'     => 'wpforms-lite',
-							'path'     => 'wpforms-lite/wpforms.php',
-							'required' => false
-						)
-					),
-					$plugins
-				),
+				'preview'    => 'https://demo.athemes.com/sp--coworking/',
+				'thumbnail'  => 'https://athemes.com/themes-demo-content/sydney/coworking-new/thumb.jpg',
 				'import'     => array(
 					'elementor' => array(
-						'content'    => 'https://athemes.com/themes-demo-content/sydney/coworking/content.xml',
-						'widgets'    => 'https://athemes.com/themes-demo-content/sydney/coworking/widgets.wie',
-						'customizer' => 'https://athemes.com/themes-demo-content/sydney/coworking/customizer.dat',
+						'content'    => 'https://athemes.com/themes-demo-content/sydney/coworking-new/content.xml',
+						'widgets'    => 'https://athemes.com/themes-demo-content/sydney/coworking-new/widgets.wie',
+						'customizer' => 'https://athemes.com/themes-demo-content/sydney/coworking-new/customizer.dat',
 					),
 				),
 			),
@@ -853,6 +902,30 @@ function sydney_atss_setup_after_import( $demo_id ) {
 			)
 		);
 	}	
+
+	if ( 'hotel' === $demo_id ) {
+		$all_modules = get_option( 'sydney-modules' );
+		$all_modules = ( is_array( $all_modules ) ) ? $all_modules : (array) $all_modules;
+
+		update_option( 'sydney-modules', array_merge( $all_modules, array( 'templates' => true ) ) );
+
+		$template_builder_data = array(
+			array(
+				'id'                => 'global',
+				'footer'            => '192',
+				'footer_builder'    => 'elementor',
+			)		
+		);
+		
+		update_option('sydney_template_builder_data', $template_builder_data);
+	}
+
+	if ( 'fashion' === $demo_id ) {
+		$merchant_modules = get_option( 'merchant-modules' );
+		$merchant_modules = ( is_array( $merchant_modules ) ) ? $merchant_modules : (array) $merchant_modules;
+
+		update_option( 'merchant-modules', array_merge( $merchant_modules, array( 'quick-view' => true, 'inactive-tab-message' => true ) ) );
+	}
 
 	// Asign the static front page and the blog page.
 	$front_page = ATSS_Core_Helpers::atss_get_page_by_title( 'My front page' ) != NULL ? ATSS_Core_Helpers::atss_get_page_by_title( 'My front page' ) : ATSS_Core_Helpers::atss_get_page_by_title( 'Home' );
