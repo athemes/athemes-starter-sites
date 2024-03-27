@@ -750,8 +750,10 @@ class Athemes_Starter_Sites_Importer {
 	/**
 	 * Maybe replace attachment urls with media library images.
 	 */
-	public static function maybe_replace_attachment_urls_with_media_library_images( $content, $image_url, $new_url ) {
-		$filename = basename( $image_url );
+	public static function maybe_replace_attachment_urls_with_media_library_images( $content, $remote_image_url, $new_url ) {
+		global $wpdb;
+
+		$filename = basename( $remote_image_url );
 
 		// Remove any extension
 		$filename = preg_replace( '/\.[^.]+$/', '', $filename );
@@ -759,19 +761,16 @@ class Athemes_Starter_Sites_Importer {
 		// Remove "-scaled" whether present
 		$filename = str_replace( '-scaled', '', $filename );
 
-		$attachment = get_posts( array(
-			'post_type'      => 'attachment',
-			'posts_per_page' => 1,
-			'fields' => 'ids',
-			'name' => $filename,
-			'exact' => false
-		) );
+		$query   = $wpdb->prepare("SELECT ID FROM {$wpdb->prefix}posts WHERE post_type = 'attachment' AND post_name LIKE '%s'", "%$filename%");
+		$results = $wpdb->get_results($query, ARRAY_A);
 
-		if ( empty( $attachment ) || ! is_array( $attachment ) ) {
-			return $content;
+		$attachment_id = $results[0]['ID'] ?? '';
+
+		if ( empty( $attachment_id ) ) {
+			return str_replace( $new_url, $remote_image_url, $content );
 		}
 
-		$attachment_url = wp_get_attachment_image_url( $attachment[0], 'full' );
+		$attachment_url = wp_get_attachment_image_url( $attachment_id, 'full' );
 
 		$content = str_replace( $new_url, $attachment_url, $content );
 

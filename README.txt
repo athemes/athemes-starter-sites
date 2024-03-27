@@ -68,6 +68,9 @@ Go to Plugins > Add New and search for aThemes Starter Sites. Install and activa
 
 == Changelog ==
 
+= 1.0.52 =
+* Improved images url's replacing implementation
+
 = 1.0.51 =
 * Improved images url's replacing implementation
 
