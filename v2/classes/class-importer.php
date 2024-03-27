@@ -704,8 +704,7 @@ class Athemes_Starter_Sites_Importer {
 	/**
 	 * Replace attachment urls.
 	 */
-	public function replace_attachment_urls( $content ) {
-
+	public static function replace_attachment_urls( $content ) {
 		if ( is_serialized( $content ) ) {
 			return $content;
 		}
@@ -739,12 +738,44 @@ class Athemes_Starter_Sites_Importer {
 				$new_url = esc_url( $uploads_url . '/' . join( '/', $url_parts['path'] ) );
 				$content = str_replace( $image_url, $new_url, $content );
 
+				$content = self::maybe_replace_attachment_urls_with_media_library_images( $content, $image_url, $new_url );
+
 			}
 
 		}
 
 		return $content;
+	}
 
+	/**
+	 * Maybe replace attachment urls with media library images.
+	 */
+	public static function maybe_replace_attachment_urls_with_media_library_images( $content, $image_url, $new_url ) {
+		$filename = basename( $image_url );
+
+		// Remove any extension
+		$filename = preg_replace( '/\.[^.]+$/', '', $filename );
+
+		// Remove "-scaled" whether present
+		$filename = str_replace( '-scaled', '', $filename );
+
+		$attachment = get_posts( array(
+			'post_type'      => 'attachment',
+			'posts_per_page' => 1,
+			'fields' => 'ids',
+			'name' => $filename,
+			'exact' => false
+		) );
+
+		if ( empty( $attachment ) || ! is_array( $attachment ) ) {
+			return $content;
+		}
+
+		$attachment_url = wp_get_attachment_image_url( $attachment[0], 'full' );
+
+		$content = str_replace( $new_url, $attachment_url, $content );
+
+		return $content;
 	}
 
 	/**
@@ -753,7 +784,7 @@ class Athemes_Starter_Sites_Importer {
 	public function post_content_replace_attachment_urls( $data ) {
 
 		if ( ! empty( $data ) && ! empty( $data['post_content'] ) ) {
-			$data['post_content'] = $this->replace_attachment_urls( $data['post_content'] );
+			$data['post_content'] = self::replace_attachment_urls( $data['post_content'] );
 		}
 
 		return $data;
@@ -769,12 +800,12 @@ class Athemes_Starter_Sites_Importer {
 
 			// Replace mega menu attachments urls.
 			if ( $meta_item['key'] === '_is_mega_menu_item_content_custom_html' && ! empty( $meta_item['value'] ) ) {
-				$meta_item['value'] = $this->replace_attachment_urls( $meta_item['value'] );
+				$meta_item['value'] = self::replace_attachment_urls( $meta_item['value'] );
 			}
 
 			// Replace elementor attachments urls.
 			if ( $meta_item['key'] === '_elementor_data' && ! empty( $meta_item['value'] ) ) {
-				$meta_item['value'] = $this->replace_attachment_urls( maybe_unserialize( $meta_item['value'] ) );
+				$meta_item['value'] = self::replace_attachment_urls( maybe_unserialize( $meta_item['value'] ) );
 			}
 
 	    // Set elementor default kit.
@@ -989,7 +1020,7 @@ class Athemes_Starter_Sites_Importer {
 		// Decode raw JSON string to associative array.
 		$data = json_decode( wp_remote_retrieve_body( $raw ) );
 
-		$data = map_deep( $data, array( $this, 'replace_attachment_urls' ) );
+		$data = map_deep( $data, array( 'Athemes_Starter_Sites_Importer', 'replace_attachment_urls' ) );
 
 		$widgets = new ATSS_Widget_Importer();
 
@@ -1076,8 +1107,6 @@ class Athemes_Starter_Sites_Importer {
 
 		// Decode raw JSON string to associative array.
 		$data = maybe_unserialize( wp_remote_retrieve_body( $raw ), true );
-
-		$data = map_deep( $data, array( $this, 'replace_attachment_urls' ) );
 
 		$customizer = new ATSS_Customizer_Importer();
 

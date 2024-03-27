@@ -59,6 +59,7 @@ class ATSS_Customizer_Importer {
 		// Import images.
 		if ( apply_filters( 'atss_customizer_import_images', true ) ) {
 			$data['mods'] = self::import_customizer_images( $data['mods'] );
+			$data = map_deep( $data, array( 'Athemes_Starter_Sites_Importer', 'replace_attachment_urls' ) );
 		}
 
 		// Import custom options.
@@ -130,6 +131,7 @@ class ATSS_Customizer_Importer {
 		foreach ( $mods as $key => $val ) {
 			if ( self::customizer_is_image_url( $val ) ) {
 				$data = self::customizer_sideload_image( $val );
+
 				if ( ! is_wp_error( $data ) ) {
 
 					$mods[ $key ] = $data->url;
@@ -174,8 +176,11 @@ class ATSS_Customizer_Importer {
 			$file_array = array();
 			$file_array['name'] = basename( $matches[0] );
 
+			preg_match('/https?:\/\/[^"]+\.(jpg|jpeg|jpe|png|gif)/', $matches[0], $matches2);
+			$file_array['url'] = $matches2[0];
+
 			// Download file to temp location.
-			$file_array['tmp_name'] = download_url( $file );
+			$file_array['tmp_name'] = download_url( $file_array['url'] );
 
 			// If error storing temporarily, return the error.
 			if ( is_wp_error( $file_array['tmp_name'] ) ) {
@@ -189,6 +194,13 @@ class ATSS_Customizer_Importer {
 			if ( is_wp_error( $id ) ) {
 				unlink( $file_array['tmp_name'] );
 				return $id;
+			}
+
+			if ( self::string_contains_html( $file ) ) {
+				return new WP_Error(
+					'customizer_import_data_error',
+					esc_html__( 'Error: The customizer import file is not in a correct format. Please make sure to use the correct customizer import file.', 'athemes-starter-sites' )
+				);
 			}
 
 			// Build the object to return.
@@ -220,6 +232,16 @@ class ATSS_Customizer_Importer {
 		}
 
 		return false;
+	}
 
+	/**
+	 * Checks to see whether a string contains HTML or not.
+	 *
+	 * @since 1.1.1
+	 * @param string $string The string to check.
+	 * @return bool Whether the string contains HTML or not.
+	 */
+	private static function string_contains_html( $string ) {
+		return preg_match( '/<[^>]+>/', $string );
 	}
 }
