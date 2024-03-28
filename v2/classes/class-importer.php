@@ -761,6 +761,8 @@ class Athemes_Starter_Sites_Importer {
 		// Remove "-scaled" whether present
 		$filename = str_replace( '-scaled', '', $filename );
 
+		$filename = $wpdb->esc_like( $filename );
+
 		$query   = $wpdb->prepare("SELECT ID FROM {$wpdb->prefix}posts WHERE post_type = 'attachment' AND post_name LIKE '%s'", "%$filename%");
 		$results = $wpdb->get_results($query, ARRAY_A);
 

@@ -397,10 +397,12 @@ function botiga_setup_after_import( $demo_id ) {
 
 	// Disable WPForms modern markup.
 	// This is needed because our demos was built with the old markup.
-	$wpforms_settings                    = (array) get_option( 'wpforms_settings', [] );
-	$wpforms_settings[ 'modern-markup' ] = false;
-
-	update_option( 'wpforms_settings', $wpforms_settings );
+	if ( in_array( $demo_id, array( 'beauty', 'apparel', 'furniture', 'jewelry', 'single-product', 'multi-vendor', 'wine', 'plants', 'shoes', 'books' ) ) ) {
+		$wpforms_settings                    = (array) get_option( 'wpforms_settings', [] );
+		$wpforms_settings[ 'modern-markup' ] = false;
+	
+		update_option( 'wpforms_settings', $wpforms_settings );
+	}
 
 	// Assign the menu.
 	$main_menu = get_term_by( 'name', 'Main', 'nav_menu' );
