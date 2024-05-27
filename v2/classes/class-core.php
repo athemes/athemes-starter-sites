@@ -67,7 +67,7 @@ if ( ! class_exists( 'Athemes_Starter_Sites' ) ) {
 		 * @param string $page Current page.
 		 */
 		public function admin_enqueue_scripts( $page ) {
-			if( ! empty( $page ) && $page !== 'appearance_page_botiga-dashboard' && $page !== 'toplevel_page_botiga-dashboard' && $page !== 'appearance_page_sydney-dashboard' ) {
+			if( ! empty( $page ) && $page !== 'appearance_page_botiga-dashboard' && $page !== 'toplevel_page_botiga-dashboard' && $page !== 'appearance_page_sydney-dashboard' && $page !== 'toplevel_page_sydney-dashboard' ) {
 				return;
 			}
 
