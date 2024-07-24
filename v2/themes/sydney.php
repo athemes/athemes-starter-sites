@@ -147,6 +147,34 @@ if ( !function_exists( 'sydney_atss_demos_list') ) {
 					),
 				),
 			),
+			'finance'    => array(
+				'name'       => esc_html__( 'Finance', 'sydney' ),
+				'type'       => 'pro',
+				'categories' => array( 'business' ),
+				'builders'   => array(
+					'elementor',
+				),
+				'preview'    => 'https://demo.athemes.com/sp--finance/',
+				'thumbnail'  => 'https://athemes.com/themes-demo-content/sydney/finance-new/thumb.jpg',
+				'plugins'    => array_merge(
+					array(
+						array(
+							'name'     => 'aThemes Addons for Elementor Lite',
+							'slug'     => 'athemes-addons-for-elementor-lite',
+							'path'     => 'athemes-addons-for-elementor-lite/athemes-addons-elementor.php',
+							'required' => false
+						),
+					),
+					$plugins
+				),
+				'import'     => array(
+					'elementor'    => array(
+						'content'    => 'https://athemes.com/themes-demo-content/sydney/finance-new/content.xml',
+						'widgets'    => 'https://athemes.com/themes-demo-content/sydney/finance-new/widgets.wie',
+						'customizer' => 'https://athemes.com/themes-demo-content/sydney/finance-new/customizer.dat',
+					)
+				),
+			),
 			'photography'     => array(
 				'name'       => esc_html__( 'Photography', 'sydney' ),
 				'type'       => 'free',
@@ -442,34 +470,6 @@ if ( !function_exists( 'sydney_atss_demos_list') ) {
 						'content'    => 'https://athemes.com/themes-demo-content/sydney/original/content.xml',
 						'widgets'    => 'https://athemes.com/themes-demo-content/sydney/original/widgets.wie',
 						'customizer' => 'https://athemes.com/themes-demo-content/sydney/original/customizer.dat',
-					)
-				),
-			),			
-			'finance'    => array(
-				'name'       => esc_html__( 'Finance', 'sydney' ),
-				'type'       => 'pro',
-				'categories' => array( 'business' ),
-				'builders'   => array(
-					'elementor',
-				),
-				'preview'    => 'https://demo.athemes.com/sp-finance/',
-				'thumbnail'  => 'https://athemes.com/themes-demo-content/sydney/finance/thumb.jpg',
-				'plugins'    => array_merge(
-					array(
-						array(
-							'name'     => 'WPForms',
-							'slug'     => 'wpforms-lite',
-							'path'     => 'wpforms-lite/wpforms.php',
-							'required' => false
-						)
-					),
-					$plugins
-				),
-				'import'     => array(
-					'elementor'    => array(
-						'content'    => 'https://athemes.com/themes-demo-content/sydney/finance/content.xml',
-						'widgets'    => 'https://athemes.com/themes-demo-content/sydney/finance/widgets.wie',
-						'customizer' => 'https://athemes.com/themes-demo-content/sydney/finance/customizer.dat',
 					)
 				),
 			),
@@ -887,6 +887,13 @@ function sydney_atss_setup_after_import( $demo_id ) {
 			'primary' => $main_menu->term_id,
 		)
 	);
+
+	if ( 'finance' === $demo_id ) {
+		$aafe_modules = get_option( 'athemes-addons-modules' );
+		$aafe_modules = ( is_array( $aafe_modules ) ) ? $aafe_modules : (array) $aafe_modules;
+
+		update_option( 'athemes-addons-modules', array_merge( $aafe_modules, array( 'call-to-action' => true, 'team-member' => true ) ) );
+	}
 
 	if ( 'blogpro' === $demo_id ) {
 		$all_modules = get_option( 'sydney-modules' );

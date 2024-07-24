@@ -88,6 +88,11 @@ class Athemes_Starter_Sites_Importer {
 	 */
 	public function add_custom_mimes( $mimes ) {
 
+		// Return if not admin
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return $mimes;
+		}
+
 		// Allow SVG files.
 		$mimes['svg']  = 'image/svg+xml';
 		$mimes['svgz'] = 'image/svg+xml';
